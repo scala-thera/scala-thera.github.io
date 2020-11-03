@@ -2,9 +2,9 @@ name: Website CI/CD
 
 on:
   push:
-    branches: source
+    branches: master
   pull_request:
-    branches: source
+    branches: master
 
 jobs:
   test:
