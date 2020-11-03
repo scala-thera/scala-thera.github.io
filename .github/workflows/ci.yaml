@@ -1,0 +1,67 @@
+name: Website CI/CD
+
+on:
+  push:
+    branches: source
+  pull_request:
+    branches: source
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    container: thera/thera-blog:2020-05-14
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache Ivy
+        uses: actions/cache@v1.1.2
+        with:
+          path: /root/.ivy2/cache
+          key: ${{ runner.os }}-ivy-${{ hashFiles('**/*.sc') }}
+          restore-keys: ${{ runner.os }}-ivy-
+
+      - name: Cache Coursier and Mill
+        uses: actions/cache@v1.1.2
+        with:
+          path: /root/.cache
+          key: ${{ runner.os }}-general-${{ hashFiles('**/*.sc') }}
+          restore-keys: ${{ runner.os }}-general-
+
+      - name: Build Website
+        run: ./amm build.sc
+
+  publish_website:
+    runs-on: ubuntu-latest
+    container: thera/thera-blog.com:2020-05-14
+    needs: [test]
+    if: github.event_name == 'push'
+
+    steps:
+      - name: Git Checkout
+        uses: actions/checkout@v2
+
+      - name: Cache Ivy
+        uses: actions/cache@v1.1.2
+        with:
+          path: /root/.ivy2/cache
+          key: ${{ runner.os }}-ivy-${{ hashFiles('**/*.sc') }}
+          restore-keys: ${{ runner.os }}-ivy-
+
+      - name: Cache Coursier and Mill
+        uses: actions/cache@v1.1.2
+        with:
+          path: /root/.cache
+          key: ${{ runner.os }}-general-${{ hashFiles('**/*.sc') }}
+          restore-keys: ${{ runner.os }}-general-
+
+      - name: Build Website
+        run: ./amm build.sc
+
+      - name: Deploy Website
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
+          publish_branch: master

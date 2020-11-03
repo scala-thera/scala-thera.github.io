@@ -18,11 +18,8 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 
-###Specific###
-/out/
-.DS_Store
-graphviz-images/
-plantuml-images/
-/example/
-/_site/
-/_volumes/
+# Ensime
+/.ensime*
+
+# Project-specific data
+/data/
