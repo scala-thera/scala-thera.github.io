@@ -1,0 +1,44 @@
+@startuml
+"Based[T]" <|-- "Recursive[T]"  : extends
+"Based[T]" <|-- "Corecursive[T]": extends
+
+"Recursive[T]"   .. Recursive  : companion
+"Corecursive[T]" .. Corecursive: companion
+
+"Recursive[T]"   <|-- "Birecursive[T]": extends
+"Corecursive[T]" <|-- "Birecursive[T]": extends
+
+"Birecursive[T]" .. Birecursive: companion
+
+class Based[T] <<(T,aqua)>> {
+  type Base[A]
+}
+
+class Recursive[T] <<(T,aqua)>> {
+  {abstract} def project(t: T)(implicit BF: Functor[Base]): Base[T]
+  ---
+  def cata[A](t: T)(f: Algebra[Base, A])(implicit BF: Functor[Base]): A
+  ...
+}
+
+class Recursive <<O,green>> {
+  type Aux[T, F[_]] = Recursive[T] { type Base[A] = F[A] }
+}
+
+class Corecursive[T] <<T,aqua)>> {
+  {abstract} def embed(t: Base[T])(implicit BF: Functor[Base]): T
+  ---
+  def ana[A](a: A)(f: Coalgebra[Base, A])(implicit BF: Functor[Base]): T
+  ...
+}
+
+class Corecursive <<O,green>> {
+  type Aux[T, F[_]] = Corecursive[T] { type Base[A] = F[A] }
+}
+
+class Birecursive[T] <<T,aqua>>
+
+class Birecursive <<O,green>> {
+  type Aux[T, F[_]] = Birecursive[T] { type Base[A] = F[A] }
+}
+@enduml

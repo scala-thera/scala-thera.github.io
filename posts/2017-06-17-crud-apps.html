@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MGZJP4K');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>John Doe - Why CRUD Applications are hard?</title>
+<meta name="author" content="John Doe" />
+
+<meta name="description" content="A Thera-powered blog">
+<meta name="keywords" content="scala, crud, web application, website">
+
+<!-- Facebook tags -->
+<meta property="og:title" content="Why CRUD Applications are hard?">
+<meta property="og:type" content="article">
+<meta property="og:url" content="http://thera-blog.com/posts/2017-06-17-crud-apps.html">
+<meta property="og:image" content="http://thera-blog.com/assets/imgs/avatar_100.png">
+<meta property="og:description" content="A Thera-powered blog">
+<meta property="og:site_name" content="A Thera-powered blog">
+<meta property="og:locale" content="en-GB">
+
+<!-- Twitter tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:description" content="A Thera-powered blog" />
+<meta name="twitter:title" content="Why CRUD Applications are hard?" />
+<meta name="twitter:site" content="@GondolaRM" />
+<meta name="twitter:image" content="http://thera-blog.com/assets/imgs/avatar_100.png" />
+<meta name="twitter:creator" content="@GondolaRM" />
+
+
+  <link rel="canonical" href="http://thera-blog.com/posts/2017-06-17-crud-apps.html" />
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="alternate" type="application/atom+xml" title="John Doe" href="http://thera-blog.com/atom.xml" />
+
+  <link rel="stylesheet" href="/assets/all.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha256-k2/8zcNbxVIh5mnQ52A0r3a6jAgMGxFJFE2707UxGCk= sha512-ZV9KawG2Legkwp3nAlxLIVFudTauWuBpC10uEafMHYL0Sarrz5A7G79kXh5+5+woxQ5HM559XX2UZjMJ36Wplg==" crossorigin="anonymous">
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MGZJP4K"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div class="container">
+    <div class="four columns sidebar">
+      <nav>
+  <h1>Hi.</h1>
+  <a href="/">
+    <img src="/assets/imgs/avatar_200.png" id="logo" alt="Blog logo"/>
+  </a>
+  <h2>I'm <a href="/">John Doe</a>.</h2>
+  <div id="bio">
+    <p>💻I'm a compiler engineer at LAMP/EPFL, working on Scala 3.</p>
+    <p>Check out the books I've written:</p>
+    <p>📕<a href="https://www.amazon.com/Mastering-Functional-Programming-techniques-programming/dp/1788620798/">Mastering Functional Programming</a> – the motivation behind purely functional libraries such as Cats.</p>
+    <p>📕<a href="/assets/files/story-of-one-library.pdf">[Free] A Story of One Library</a> – a commit-by-commit analysis of an application from the very start. The challenges that were arising during the implementation are addressed in a functional way, so that the reader can understand the motivation behind the functional techniques.</p>
+  </div>
+  <div id="social">
+    Where to find me:
+    <div id="stalker">
+      <a title="Gondolav on Github" href="https://github.com/Gondolav">
+        <i class="fa fa-github-square"></i>
+      </a>
+
+      <a title="GondolaRM on Twitter" href="https://twitter.com/GondolaRM">
+        <i class="fa fa-twitter-square"></i>
+      </a>
+
+      <a title="John Doe on LinkedIn" href="https://www.linkedin.com/in/andrea-veneziano">
+        <i class="fa fa-linkedin-square"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+    </div>
+
+    <div class="eleven columns content">
+      <p class="meta">
+  Jun 17, 2017
+  <a href="/">
+    <i class="home fa fa-home"></i>
+  </a>
+</p>
+
+<h1 class="title">Why CRUD Applications are hard?</h1>
+<div id="post">
+  <div class="toc">
+<ul>
+<li><a href="#existing-solutions">Existing solutions</a><ul>
+<li><a href="#cms">CMS</a></li>
+<li><a href="#frameworks">Frameworks</a></li>
+</ul></li>
+<li><a href="#the-problem">The Problem</a></li>
+<li><a href="#abstraction">Abstraction</a><ul>
+<li><a href="#what-is-a-web-app-all-about">What is a web app all about?</a></li>
+<li><a href="#what-can-be-abstracted">What can be abstracted?</a></li>
+<li><a href="#thoughts-on-implementation">Thoughts on Implementation</a><ul>
+<li><a href="#dao">DAO</a></li>
+<li><a href="#http-handlers">HTTP handlers</a></li>
+<li><a href="#views">Views</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</div>
+<div class="body">
+<p>CRUD, or Create-Read-Update-Delete, are web applications aimed on display and processing of information. They allow users to create, modify and browse some information. These are your ordinary forums, blogs, online shops, news websites etc.</p>
+<p>Such an application sounds simple to implement. Yet in practice, I found implementing them to be time consuming. In this post, I am trying to explore why. I have not came to any definite conclusion or proposal yet, so these are just my thoughts on the matter. Possible solutions are considered in the context of Scala, so the libraries referred here are Scala libraries.</p>
+<h1 id="existing-solutions">Existing solutions</h1>
+<p>Since CRUD applications are so abundant, it is natural that there exist a lot of frameworks and libraries for their implementation. Let us briefly overview what is available.</p>
+<h2 id="cms">CMS</h2>
+<p>CMS, or Content Management Systems, are probably the easiest way to implement CRUD applications. They provide a ready website aimed at processing of a specific kind of information. For example, Wordpress aims at blogging. It knows how to store blog posts in a database out of the box and provides you with a blog-aware backend. Shopping CMSs like Prestashop know how to work with goods, customers and orders.</p>
+<p>The strong side of CMSs is a lot of capabilities out of the box. After installing a CMS, you get a working website that you can configure and work on without any knowledge of programming.</p>
+<p>The weakness of CMSs is lack of flexibility. While you are working within the assumptions of a CMS, everything goes smooth. But whenever you need additional features, you may need to resort to plugins. Sooner or later you will encounter a need that is not addressed by any existing plugin and you'll need to write your own. To do so you'll need to learn the CMS architecture and how its plugins work. This may imply a steep learning curve. Worse, after learning a CMS, you may find that its architecture is not so convenient to work with, or that your feature can not be implemented at all.</p>
+<h2 id="frameworks">Frameworks</h2>
+<p>These require you to describe your website in code. But they also dictate you the rules according to which you should program. If you obey these rules, your framework automates many things for you. Some examples from the Java/Scala world include Java Servlets, Spring, Scala Play, Scalatra.</p>
+<p>Frameworks abstract away technical details so that you can focus on what really matters to your application. For example, instead of describing how to receive a web request and how to parse its headers you should be thinking about the business logic of your application - what happens when a user posts a message to the forum.</p>
+<h1 id="the-problem">The Problem</h1>
+<p>The problem with the modern frameworks is that they don't abstract the right thing. They mostly focus on hiding the complexity of the inner workings of the server. Some of them also provide abstractions for templating, validation and other similar things. But is that enough? If not, why and what do they fail to abstract?</p>
+<p>Consider building a forum. What will this task involve?</p>
+<p>First, we need to model the domain. We have the following data types:</p>
+<ul>
+<li>User</li>
+<li>Thread</li>
+<li>Message (in a thread)</li>
+</ul>
+<p>Next, we need a way to store and query these in a database. We need to create a database schema and a data access object for each of our entities.</p>
+<p>We also need to specify the business logic, the API of our application. What can the users do and what happens on every action? We can support something as follows:</p>
+<ul>
+<li>Registration and logging in.</li>
+<li>Browsing all the threads.</li>
+<li>Browsing a particular thread with comments.</li>
+<li>Creating new threads.</li>
+<li>Creating new comments.</li>
+<li>Moderators can also update and delete comments and users.</li>
+</ul>
+<p>We can implement this API by defining some service objects.</p>
+<p>Finally, we will need HTML views and HTTP request handlers. The handlers will perform API calls and render their output using the views.</p>
+<p>So, the model objects, the DAO, the API, the views and the handlers - these are 5 steps to do to add some new data-related functionality to the site!</p>
+<p>Yet, a lot of the above information can be derived from the model objects and the API logic.</p>
+<h1 id="abstraction">Abstraction</h1>
+<p>Programming is an art of abstraction. In the above example, what is technical details and what is something we'd like to focus on?</p>
+<h2 id="what-is-a-web-app-all-about">What is a web app all about?</h2>
+<p>Let us look at some web apps out there. Online stores. Forums. Blogs. News websites. What do they have in common? How are they different from desktop or mobile applications? What are they all about?</p>
+<ul>
+<li>One server with some information on it. Blog posts, forum posts, news - all this is information the server stores and modifies.</li>
+<li>Many users accessing and modifying this information.</li>
+<li>Access via HTTP protocol. These users access and modify the information via HTTP requests and responses.</li>
+</ul>
+<p>So a web application is a program that persists information and defines how users can modify it via HTTP protocol.</p>
+<p>If a web app is all about how to store and process information, probably this is what a programmer should focus on when writing it.</p>
+<h2 id="what-can-be-abstracted">What can be abstracted?</h2>
+<p>Under this approach, we should aim for abstracting everything that does not describe the way the data is accessed and processed. Ideally, it would be nice to have a DSL that would allow to specify the data processing declaratively.</p>
+<p>What is it possible to abstract away?</p>
+<p>First, DAO and persistence. They have nothing to do with the business logic of the application, so we do not want to focus on them. Given a model object, it is possible to derive its SQL schema and CRUD methods to access and modify it.</p>
+<p>Next, HTML views and HTTP handlers. These define an interface to the API methods. Based on the API methods themselves, it may be possible to generate the handlers and the views.</p>
+<h2 id="thoughts-on-implementation">Thoughts on Implementation</h2>
+<p>Scala macros and techniques for generic programming can be an answer here.</p>
+<h3 id="dao">DAO</h3>
+<p>Macro annotations can analyze domain objects on compile time, similarly to how <a href="TODO">Freestyle</a> utilizes them. They can then generate all the boilerplate DAOs with CRUD methods.</p>
+<p>If an object has relationships to other classes, these relationships can be detected (e.g. non-primitive field in a model class means a relationship) and read methods can be generated for these too.</p>
+<h3 id="http-handlers">HTTP handlers</h3>
+<p>If the API methods are mostly about CRUD operations, here is how we can generate HTTP handlers and views from them:</p>
+<ul>
+<li>Create and Update methods generate two pages. One page contains a form a user can fill to specify the modifications they want to make. The other is the handler page that takes this data and calls an API method with it. The forms can be derived via the API method parameters.</li>
+<li>Read methods generate one page. Parameters to these API methods can become REST or GET request parameters. Reasonable default views can be derived from the types these API methods return.</li>
+</ul>
+<p>Analysis of the API methods can also be done via macros. All the API methods have some input and output types. We can annotate the API methods with <code>@get</code> and <code>@post</code> annotations: if it is a GET method, the input parameters will come from the GET HTTP request, if it is a POST method, then a separate page with a form should be generated for it.</p>
+<p>The GET handlers will just render whatever the API method returned, the POST handlers will use redirects to display the result of the rendering.</p>
+<h3 id="views">Views</h3>
+<p>API methods should be converted to HTML views in order to get rendered. Also HTML forms should be generated for POST requests to provide input values for the API methods.</p>
+<p>For prototyping or simple websites, making views by hand can be tedious. It would be nice to have an option to generate them automatically based on simple rules.</p>
+<p>For this purpose, <a href="TODO">Shapeless</a> can be used. It can easily generate views for complex case classes based on the views of the primitives it is composed of.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>It would be nice to have a framework that allows to easily generate CRUD applications. It should be flexible, free you from the boilerplate, but it should also allow the programmer to have full control over the application. It should be possible to turn off or override any part of the framework at will.</p>
+<p>Modern solutions are either too large, or too inflexible, or both. Therefore there is a need for something more compact that allows both for easy prototyping and for a production-ready application.</p>
+</div>
+</div>
+
+
+      <div class="footer">
+        <div class="disclaimer">
+  <p>
+    © John Doe, 2016 - 2020 &mdash; built using <a href="https://github.com/swanson/lagom">Lagom theme</a>. Powered by <a href="https://github.com/anatoliykmetyuk/thera">Thera</a>. The sources of this site are availabel on <a href="https://github.com/anatoliykmetyuk/anatoliykmetyuk.github.io">GitHub</a>.
+  </p>
+</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

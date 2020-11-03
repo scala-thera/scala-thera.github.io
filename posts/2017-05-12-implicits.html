@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MGZJP4K');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>John Doe - Implicits mechanism in Scala</title>
+<meta name="author" content="John Doe" />
+
+<meta name="description" content="A Thera-powered blog">
+<meta name="keywords" content="implicit, scala">
+
+<!-- Facebook tags -->
+<meta property="og:title" content="Implicits mechanism in Scala">
+<meta property="og:type" content="article">
+<meta property="og:url" content="http://thera-blog.com/posts/2017-05-12-implicits.html">
+<meta property="og:image" content="http://thera-blog.com/assets/imgs/avatar_100.png">
+<meta property="og:description" content="A Thera-powered blog">
+<meta property="og:site_name" content="A Thera-powered blog">
+<meta property="og:locale" content="en-GB">
+
+<!-- Twitter tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:description" content="A Thera-powered blog" />
+<meta name="twitter:title" content="Implicits mechanism in Scala" />
+<meta name="twitter:site" content="@GondolaRM" />
+<meta name="twitter:image" content="http://thera-blog.com/assets/imgs/avatar_100.png" />
+<meta name="twitter:creator" content="@GondolaRM" />
+
+
+  <link rel="canonical" href="http://thera-blog.com/posts/2017-05-12-implicits.html" />
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="alternate" type="application/atom+xml" title="John Doe" href="http://thera-blog.com/atom.xml" />
+
+  <link rel="stylesheet" href="/assets/all.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha256-k2/8zcNbxVIh5mnQ52A0r3a6jAgMGxFJFE2707UxGCk= sha512-ZV9KawG2Legkwp3nAlxLIVFudTauWuBpC10uEafMHYL0Sarrz5A7G79kXh5+5+woxQ5HM559XX2UZjMJ36Wplg==" crossorigin="anonymous">
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MGZJP4K"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div class="container">
+    <div class="four columns sidebar">
+      <nav>
+  <h1>Hi.</h1>
+  <a href="/">
+    <img src="/assets/imgs/avatar_200.png" id="logo" alt="Blog logo"/>
+  </a>
+  <h2>I'm <a href="/">John Doe</a>.</h2>
+  <div id="bio">
+    <p>💻I'm a compiler engineer at LAMP/EPFL, working on Scala 3.</p>
+    <p>Check out the books I've written:</p>
+    <p>📕<a href="https://www.amazon.com/Mastering-Functional-Programming-techniques-programming/dp/1788620798/">Mastering Functional Programming</a> – the motivation behind purely functional libraries such as Cats.</p>
+    <p>📕<a href="/assets/files/story-of-one-library.pdf">[Free] A Story of One Library</a> – a commit-by-commit analysis of an application from the very start. The challenges that were arising during the implementation are addressed in a functional way, so that the reader can understand the motivation behind the functional techniques.</p>
+  </div>
+  <div id="social">
+    Where to find me:
+    <div id="stalker">
+      <a title="Gondolav on Github" href="https://github.com/Gondolav">
+        <i class="fa fa-github-square"></i>
+      </a>
+
+      <a title="GondolaRM on Twitter" href="https://twitter.com/GondolaRM">
+        <i class="fa fa-twitter-square"></i>
+      </a>
+
+      <a title="John Doe on LinkedIn" href="https://www.linkedin.com/in/andrea-veneziano">
+        <i class="fa fa-linkedin-square"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+    </div>
+
+    <div class="eleven columns content">
+      <p class="meta">
+  May 12, 2017
+  <a href="/">
+    <i class="home fa fa-home"></i>
+  </a>
+</p>
+
+<h1 class="title">Implicits mechanism in Scala</h1>
+<div id="post">
+  <div class="toc">
+<ul>
+<li><a href="#motivation">Motivation</a></li>
+<li><a href="#example">Example</a><ul>
+<li><a href="#architecture">Architecture</a></li>
+<li><a href="#execution">Execution</a></li>
+</ul></li>
+<li><a href="#implicit-conversions">Implicit Conversions</a><ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#mechanics">Mechanics</a></li>
+</ul></li>
+<li><a href="#method-injection-with-rich-wrappers">Method Injection with Rich Wrappers</a><ul>
+<li><a href="#theory">Theory</a></li>
+<li><a href="#example-1">Example</a></li>
+</ul></li>
+<li><a href="#dependency-injection-with-implicit-arguments">Dependency Injection with Implicit arguments</a><ul>
+<li><a href="#theory-1">Theory</a></li>
+<li><a href="#example-2">Example</a></li>
+</ul></li>
+<li><a href="#implicit-class-pattern"><code>implicit class</code> pattern</a></li>
+<li><a href="#a-word-of-caution">A word of caution</a></li>
+</ul>
+</div>
+<div class="body">
+<h1 id="motivation">Motivation</h1>
+<p>There are three things Scala implicits mechanism is good for:</p>
+<ul>
+<li>Conversion from one type to another</li>
+<li>Method injection</li>
+<li>Dependency injection</li>
+</ul>
+<p><strong>Conversion</strong> from one type to another may be needed when a variable of one type is used where another type is expected. For example, a <code>java.lang.Integer</code> is used where <code>scala.Int</code> is expected. The conversion is straightforward, but it may be a nuisance to do that by hand. Implicit conversion from <code>Integer</code> to <code>Int</code> (and vice versa) enables you to use one when the other is expected and have the compiler to do the conversion automatically.</p>
+<p><strong>Method injection</strong> allows you to inject and subsequently call a method on a class that does not have this method defined or inherited. The &quot;injection&quot; is meant in a metaphorical sense - the class definitions are not modified. For example, in Scala you can call the collections methods (<code>map</code>, <code>flatMap</code> etc) on a <code>java.lang.String</code>, which does not define them.</p>
+<p><strong>Dependency injection</strong> is needed in the majority of large applications to glue their modules together. In Java, people use Spring Framework for this, and in Scala the Pie pattern or injection via constructor parameters are popular. One way to think about the implicits is a language-level support for dependency injection. Whenever we define something that relies on something else, we can declare this dependency via implicits.</p>
+<p>This may not look like much at a glance. But the implicits mechanism powers a whole programming style oriented on purely functional and type level programming based on category theory.</p>
+<p>This article explains the Scala implicits and these three ways to make use of them.</p>
+<h1 id="example">Example</h1>
+<p>The best way to understand a concept is to see its concrete application.</p>
+<p>Consider a web application in Scala. Its job is to maintain a database of users and expose them as a JSON API. A user has an <code>Int</code> ID and a <code>String</code> name. Let us see how implicits can come handy in this scenario.</p>
+<h2 id="architecture">Architecture</h2>
+<p>A natural way to model users is to define a <code>User</code> case class. Next, we need a way to perform read/write operations on a database of users. Finally, within our web framework we want to register an HTTP request handler to expose the JSON API to the users.</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="Setting"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">type</span> Json = Map[String, String]
+<span class="kw">type</span> ApiHandler = PartialFunction[String, Json]
+
+<span class="kw">val</span> apiPath = <span class="st">&quot;/api/user&quot;</span>
+
+<span class="kw">def</span> <span class="fu">serve</span>(h: ApiHandler): Unit = <span class="fu">println</span>(<span class="fu">h</span>(s<span class="st">&quot;$apiPath/42&quot;</span>))
+
+<span class="kw">case</span> <span class="kw">class</span> <span class="fu">User</span>(id: Int, username: String)
+
+<span class="kw">trait</span> UserDB {
+  <span class="kw">def</span> <span class="fu">write</span>(u: User): Unit
+  <span class="kw">def</span> <span class="fu">read</span> (id: Int): User
+}
+
+<span class="kw">abstract</span> <span class="kw">class</span> <span class="fu">DummyUserDB</span>(dbName: String) <span class="kw">extends</span> UserDB {
+  <span class="kw">private</span> <span class="kw">var</span> persistence: Map[Int, User] = Map()
+
+  <span class="kw">def</span> <span class="fu">write</span>(u: User): Unit = {
+    persistence = persistence.<span class="fu">updated</span>(u.<span class="fu">id</span>, u)
+    <span class="fu">println</span>(s<span class="st">&quot;Wrote to $dbName: $u&quot;</span>)
+  }
+  <span class="kw">def</span> <span class="fu">read</span>(id: Int): User = <span class="fu">persistence</span>(id)
+}
+<span class="kw">object</span> UserDBSql <span class="kw">extends</span> <span class="fu">DummyUserDB</span>(<span class="st">&quot;SQL&quot;</span>)</code></pre></div>
+<p>For simplicity, we do not use any real database or web framework here, we merely mock their functionality:</p>
+<ul>
+<li>JSON and HTTP handlers here are represented in terms of core Scala functionality.</li>
+<li><code>serve</code> method represents a way to register an HTTP handler within your web framework. Since we do not have a framework, we use it for testing the handler by calling it with a test path.</li>
+<li><code>UserDB</code> represents an interface to the database. <code>DummyUserDB</code> is a simple implementation of it that uses a <code>Map</code> as a persistence backend. By the end of the tutorial we will have two such dummy access objects, so it is useful to abstract this functionality in a separate class.</li>
+<li><code>UserDBSql</code> pretends to use a SQL database as a backend.</li>
+</ul>
+<h2 id="execution">Execution</h2>
+<p>With that architecture, in order to expose the API, we need to register a handler for the HTTP path of that API within the web framework using the <code>serve</code> method.</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="E1_1_Force_Conversion"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">userToJson</span>(u: User): Json =
+  Map(<span class="st">&quot;id&quot;</span> -&gt; u.<span class="fu">id</span>.<span class="fu">toString</span>, <span class="st">&quot;username&quot;</span> -&gt; u.<span class="fu">username</span>)
+
+<span class="kw">val</span> u = <span class="fu">User</span>(<span class="dv">42</span>, <span class="st">&quot;Bob&quot;</span>)
+UserDBSql.<span class="fu">write</span>(u)
+
+<span class="kw">val</span> usersApiPath = s<span class="st">&quot;$apiPath/(</span><span class="ch">\\</span><span class="st">d+)&quot;</span>.<span class="fu">r</span>
+<span class="kw">val</span> handler: ApiHandler = {
+  <span class="kw">case</span> <span class="fu">usersApiPath</span>(id) =&gt;
+    <span class="kw">val</span> user = UserDBSql.<span class="fu">read</span>(id.<span class="fu">toInt</span>)
+    <span class="fu">userToJson</span>(user)
+}
+<span class="fu">serve</span>(handler)</code></pre></div>
+<p>The above code first writes a sample user to the database. Then it defines a HTTP request handler for the JSON API to the users. We use regex to define a RESTful path of the form <code>&quot;/api/user/${userId}&quot;</code>. Inside the handler, we read the user with the requested id from the SQL database, serialize it to JSON and return.</p>
+<h1 id="implicit-conversions">Implicit Conversions</h1>
+<h2 id="introduction">Introduction</h2>
+<p>Notice how we convert the <code>user</code> object to <code>Json</code> after reading it. This is a technical step that diverts our focus from the task at hand - responding to HTTP request. It is rather obvious too - we need to return <code>Json</code>, we have <code>User</code> and the conversion process from <code>User</code> to <code>Json</code> is well defined - a call to <code>userToJson</code>.</p>
+<p>It turns out Scala compiler can also see that and can wrap the <code>user</code> into the conversion method <code>userToJson</code> automatically for us. We can instruct it to do so by prefixing the <code>def userToJson</code> with the <code>implicit</code> keyword:</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="userToJson"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">def</span> <span class="fu">userToJson</span>(u: User): Json =
+  Map(<span class="st">&quot;id&quot;</span> -&gt; u.<span class="fu">id</span>.<span class="fu">toString</span>, <span class="st">&quot;username&quot;</span> -&gt; u.<span class="fu">username</span>)</code></pre></div>
+<p>Now we can write the handler as:</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="E1_2_Conversion"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> handler: ApiHandler = {  <span class="co">// PartialFunction[String, Json]</span>
+  <span class="kw">case</span> <span class="fu">usersApiPath</span>(id) =&gt;
+    <span class="kw">val</span> user = UserDBSql.<span class="fu">read</span>(id.<span class="fu">toInt</span>)
+    user <span class="co">// User; User =&gt; Json</span>
+}</code></pre></div>
+<p>This <code>implicit def</code> is an <em>implicit conversion</em>. It behaves almost exactly the same way the original <code>def</code> does. For instance, you can call it explicitly as an ordinary <code>def</code>. The only difference is that whenever the compiler encounters <code>User</code> where <code>Json</code> is expected, it now has our permission to automatically use that method to convert one to another.</p>
+<h2 id="mechanics">Mechanics</h2>
+<p>In the example above, the <code>ApiHandler</code> is an alias for <code>PartialFunction[String, Json]</code>. This means the compiler knows that if we define a partial function of that type (the <code>handler</code>), we must return a value of type <code>Json</code> from it. It also sees that we return <code>User</code> instead. So the expression of type <code>User</code> is used where an expression of type <code>Json</code> is expected. At this point, the compiler will start to look for an implicit conversion from <code>User</code> to <code>Json</code>. If it finds such a conversion, it will use it, otherwise it will fail with an error as we would expect.</p>
+<p>In order to find a conversion, the compiler looks through the <em>implicit scope</em> of the site where the conversion needs to be applied (in our case, the place where we returned <code>user</code>). There are complicated <a href="http://stackoverflow.com/a/5598107/3895471">rules</a> to which implicit methods end up in the scope. But as a rule of thumb, if you can call an <code>implicit def</code> without using its fully qualified path, you have it in scope. The most common scenario is when you import the conversion or define it locally.</p>
+<p>To find the appropriate conversion, the compiler looks at the signatures of the implicit methods in scope. It knows that <code>PartialFunction[String, Json]</code> expects a <code>Json</code> to be returned, but <code>User</code> was returned. So, the required conversion must be a function that takes <code>User</code> as an argument and has <code>Json</code> as its return type. <code>userToJson</code> is an implicit def, is in scope and has the correct signature - so the compiler uses it.</p>
+<h1 id="method-injection-with-rich-wrappers">Method Injection with Rich Wrappers</h1>
+<h2 id="theory">Theory</h2>
+<p>Implicit conversions can be used to augment existing types with new methods. For example, instead of explicitly calling the database each time you want to perform a read or write operation, you can augment the model objects with corresponding methods.</p>
+<p>Whenever we call a method on an object that does not have this method defined, the compiler tries to implicitly convert it to a class on which you can call this method. If there is no such conversion in scope, it fails as expected.</p>
+<p>Hence the Rich Wrapper pattern. A rich wrapper to augment some type <code>T</code> with a method <code>f</code> includes:</p>
+<ul>
+<li>A wrapper class that has:</li>
+<li>A reference to the object to be augmented</li>
+<li>The <code>f</code> method we want to augment <code>T</code> with</li>
+<li>An implicit conversion from <code>T</code> to the wrapper class.</li>
+</ul>
+<p>This way, whenever we call the method <code>f</code> on an object of type <code>T</code> that does not have it defined, the compiler will implicitly convert <code>T</code> to the wrapper and call <code>f</code> on the wrapper. Due to the fact that the wrapper has a reference to the wrapped object (the one being converted), we can access this object from <code>f</code>.</p>
+<h2 id="example-1">Example</h2>
+<p>Let us try to augment the <code>User</code> class with a <code>write()</code> method and the <code>String</code> with <code>readUser()</code> method. This way, we can call <code>u.write()</code> instead of <code>UserDBSql.write(u)</code> and <code>id.toInt.readUser()</code> instead of <code>UserDBSql.read(id.toInt)</code>. Notice how the read operation on an <code>Int</code> can be ambiguous: we can have more models than just <code>User</code> that we might want to read this way. So we should use non-ambiguous name for the method.</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="E2_Wrapper_conversions"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">class</span> <span class="fu">RichUser</span>(u: User) {
+  <span class="kw">def</span> <span class="fu">write</span>() = UserDBSql.<span class="fu">write</span>(u)
+}
+<span class="kw">implicit</span> <span class="kw">def</span> <span class="fu">augmentUser</span>(u: User): RichUser = <span class="kw">new</span> <span class="fu">RichUser</span>(u)
+
+<span class="kw">class</span> <span class="fu">RichId</span>(x: Int) {
+  <span class="kw">def</span> <span class="fu">readUser</span>(): User = UserDBSql.<span class="fu">read</span>(x)
+}
+<span class="kw">implicit</span> <span class="kw">def</span> <span class="fu">augmentInt</span>(x: Int): RichId = <span class="kw">new</span> <span class="fu">RichId</span>(x)</code></pre></div>
+<p>After we have these conversions in scope, we can rewrite our example as follows:</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="E2_Wrapper_example"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> u = <span class="fu">User</span>(<span class="dv">42</span>, <span class="st">&quot;Bob&quot;</span>)
+u.<span class="fu">write</span>()
+
+<span class="kw">val</span> usersApiPath = s<span class="st">&quot;$apiPath/(</span><span class="ch">\\</span><span class="st">d+)&quot;</span>.<span class="fu">r</span>
+<span class="kw">val</span> handler: ApiHandler = {
+  <span class="kw">case</span> <span class="fu">usersApiPath</span>(id) =&gt; id.<span class="fu">toInt</span>.<span class="fu">readUser</span>()
+}
+<span class="fu">serve</span>(handler)</code></pre></div>
+<p>The compiler will encounter the <code>u.write()</code> and <code>id.toInt.readUser()</code>, but will not find the <code>write()</code> and <code>readUser()</code> methods in <code>User</code> and <code>Int</code> correspondingly. It will then look at the types of the objects the methods are called on and will try to find the conversions from these types to the ones that have the required methods. In our case, these objects will be converted to the rich wrappers we have defined.</p>
+<h1 id="dependency-injection-with-implicit-arguments">Dependency Injection with Implicit arguments</h1>
+<h2 id="theory-1">Theory</h2>
+<p>A <code>def</code> may have its last argument group defined as <code>implicit</code>. This means that we we can ignore this entire group. When the method is called, the compiler will look for the missing arguments in the implicit scope for us.</p>
+<p>It works similarly to how the compiler looks for implicit conversions: just that in case of the conversions it looks for methods with a particular signature (<code>TargetType =&gt; RequiredType</code>) and in case of implicit arguments it looks for <code>val</code>s or <code>def</code>s (yes, it is possible to put <code>val</code>s to the implicit scope too) with the required return type.</p>
+<p>This can be used to declare dependencies for method calls or object constructions (a class constructor can also have an implicit argument group). Then, to inject the dependency, we just need to make sure it is on the implicit scope when we call the method or the constructor.</p>
+<h2 id="example-2">Example</h2>
+<p>In our example, the rich wrappers depend on the database access object. Let us see what happens if we want to support multiple database backends - for instance, a MongoDB backend:</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="MongoDB"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">object</span> UserDBMongo <span class="kw">extends</span> <span class="fu">DummyUserDB</span>(<span class="st">&quot;MongoDB&quot;</span>)</code></pre></div>
+<p>Then, whenever we want to change the backend we use, we will need to change every occurrence of it in the code. That's not very DRY, so normally you would assign the backend you want to use to a variable and reference it every time you need the backend:</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="E3_1_Force_Context_conversions"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">val</span> db = UserDBMongo
+
+<span class="kw">class</span> <span class="fu">RichUser</span>(u: User) {
+  <span class="kw">def</span> <span class="fu">write</span>() = db.<span class="fu">write</span>(u)
+}
+<span class="kw">implicit</span> <span class="kw">def</span> <span class="fu">augmentUser</span>(u: User): RichUser = <span class="kw">new</span> <span class="fu">RichUser</span>(u)
+
+<span class="kw">class</span> <span class="fu">RichId</span>(x: Int) {
+  <span class="kw">def</span> <span class="fu">readUser</span>(): User = db.<span class="fu">read</span>(x)
+}
+<span class="kw">implicit</span> <span class="kw">def</span> <span class="fu">augmentInt</span>(x: Int): RichId = <span class="kw">new</span> <span class="fu">RichId</span>(x)</code></pre></div>
+<p>This introduces a dependency on a global variable, however. <code>RichUser</code>, <code>RichId</code> and any other code that needs a backend must know exactly where this variable is located. This can greatly reduce flexibility in case of large code bases: every time you work with the backend, you are forced to think globally, and this reduces focus on the current task. Modular, purely local solutions where you need to think only about the local piece of code you are currently writing, are preferred. Hence the need for a dependency injection mechanism.</p>
+<p>With the implicit arguments, we can perform the dependency injection as follows:</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="E3_Context_conversions"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">class</span> <span class="fu">RichUser</span>(u: User, db: UserDB) {
+  <span class="kw">def</span> <span class="fu">write</span>() = db.<span class="fu">write</span>(u)
+}
+<span class="kw">implicit</span> <span class="kw">def</span> <span class="fu">augmentUser</span>(u: User)(<span class="kw">implicit</span> db: UserDB): RichUser =
+  <span class="kw">new</span> <span class="fu">RichUser</span>(u, db)
+
+<span class="kw">class</span> <span class="fu">RichId</span>(x: Int, db: UserDB) {
+  <span class="kw">def</span> <span class="fu">readUser</span>(): User = db.<span class="fu">read</span>(x)
+}
+<span class="kw">implicit</span> <span class="kw">def</span> <span class="fu">augmentInt</span>(x: Int)(<span class="kw">implicit</span> db: UserDB): RichId =
+  <span class="kw">new</span> <span class="fu">RichId</span>(x, db)</code></pre></div>
+<p>Notice how the <code>write()</code> and <code>readUser()</code> methods no longer depend on anything outside the scope of their parent classes. Next, notice how the <code>db</code> backend is passed as an implicit argument to the implicit conversion methods. When the compiler needs to call these conversions, it will look up these implicit arguments and inject them into the original <code>implicit def</code>s:</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="E3_Context_example"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">val</span> db = UserDBMongo
+
+<span class="kw">val</span> u = <span class="fu">User</span>(<span class="dv">42</span>, <span class="st">&quot;Bob&quot;</span>)
+u.<span class="fu">write</span>()
+
+<span class="kw">val</span> usersApiPath = s<span class="st">&quot;$apiPath/(</span><span class="ch">\\</span><span class="st">d+)&quot;</span>.<span class="fu">r</span>
+<span class="kw">val</span> handler: ApiHandler = {
+  <span class="kw">case</span> <span class="fu">usersApiPath</span>(id) =&gt; id.<span class="fu">toInt</span>.<span class="fu">readUser</span>()
+}
+<span class="fu">serve</span>(handler)</code></pre></div>
+<p>We still have the backend stored in one variable, but this time no code that requires it references it directly. Instead, the implicits mechanism acts as a dependency injection framework. All we need to do before calling a method with implicit dependencies is to place these dependencies at the implicit scope before the call is performed.</p>
+<h1 id="implicit-class-pattern"><code>implicit class</code> pattern</h1>
+<p>The rich wrapper pattern discussed above is so commonly used that there is a language level support for it in Scala. It is possible to declare an <code>implicit class</code> that has exactly one constructor parameter (not counting a possible implicit parameter group). This will declare a class as usual, but also an implicit conversion from its constructor's argument type to that class:</p>
+<div class="sourceCode" include="code/implicits/src/main/scala/implicitconversions/Main.scala" snippet="E4_WrapperShorthand_conversions"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">class</span> <span class="fu">RichUser</span>(u: User)(<span class="kw">implicit</span> db: UserDB) {
+  <span class="kw">def</span> <span class="fu">write</span>() = db.<span class="fu">write</span>(u)
+}
+<span class="co">// (User ^ UserDB) =&gt; RichUser</span>
+
+<span class="kw">implicit</span> <span class="kw">class</span> <span class="fu">RichId</span>(x: Int)(<span class="kw">implicit</span> db: UserDB) {
+  <span class="kw">def</span> <span class="fu">readUser</span>(): User = db.<span class="fu">read</span>(x)
+}
+<span class="co">// (Int ^ UserDB) =&gt; RichId</span>
+</code></pre></div>
+<p>Notice how class constructors can also have an implicit argument group.</p>
+<h1 id="a-word-of-caution">A word of caution</h1>
+<p>There is another rather technical conversion in our code that potentially can be simplified away with implicit conversions - it is <code>id.toInt</code> in <code>UserDBSql.read(id.toInt)</code>.</p>
+<p><code>case usersApiPath(id)</code> matches the <code>String</code> fed into the handler against the regex we defined and captures the text group with the id of the requested user. The problem is, our ids are <code>Int</code>s, but the regex captures everything as a <code>String</code>. So in order to call the <code>read</code> method, we first need to convert a <code>String</code> to an <code>Int</code> - hence <code>id.toInt</code>.</p>
+<p>At a glance, we may think it is a good idea to do this via an implicit conversion:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">def</span> <span class="fu">strToInt</span>(s: String): Int = Integer.<span class="fu">parseInt</span>(s)</code></pre></div>
+<p>But what happens if someone glances at <code>UserDBSql.read()</code> and thinks it queries the database by username, not an id. Not an unlikely scenario: in a reasonable implementation of the database schema will, every user can be uniquely identified by both its id and the username. So without looking at the <code>read()</code>'s signature, one may assume it accepts a username of type<code>String</code> and proceed to call <code>UserDBSql.read(&quot;Bob&quot;)</code>.</p>
+<p>First consider the scenario without an implicit conversion. The compiler will see that we have made a mistake by looking at the types (<code>Int</code> expected but <code>String</code> found), and will emit an error.</p>
+<p>But what if we have an implicit conversion from <code>String</code> to <code>Int</code> in scope? In this case, the compiler will not fail with an error and try to use the implicit conversion instead. On runtime, this conversion is bound to fail with an exception, since <code>&quot;Bob&quot;</code> is not a valid number. But on compile time, the compiler has no way of knowing this and will successfully compile the program.</p>
+<p>So the error that normally would have been discovered on compile time remains undetected until the runtime. And it is much harder to detect and debug runtime errors.</p>
+<p>Scala's strong type system aims to safeguard against errors and bugs, catching as much of them as possible on compile time. The implicits mechanism is a powerful feature of the compiler. However with great power comes great responsibility. If you overuse it, you may introduce bugs at runtime, harm the robustness of your program and make it hard to understand (situation known as &quot;implicits hell&quot;).</p>
+<p>So when do you use them and when - not? When you bring implicit conversions in scope you instruct the compiler to make certain assumptions about your program. It assumes you want it to perform the conversion whenever applicable without asking you. In each individual case, you should consider the consequences of this additional freedom you give to the compiler.</p>
+</div>
+</div>
+
+
+      <div class="footer">
+        <div class="disclaimer">
+  <p>
+    © John Doe, 2016 - 2020 &mdash; built using <a href="https://github.com/swanson/lagom">Lagom theme</a>. Powered by <a href="https://github.com/anatoliykmetyuk/thera">Thera</a>. The sources of this site are availabel on <a href="https://github.com/anatoliykmetyuk/anatoliykmetyuk.github.io">GitHub</a>.
+  </p>
+</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

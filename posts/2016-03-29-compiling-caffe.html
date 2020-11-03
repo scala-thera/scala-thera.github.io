@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MGZJP4K');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>John Doe - Compiling Caffe under Mac OS X with Anaconda dependencies</title>
+<meta name="author" content="John Doe" />
+
+<meta name="description" content="A guide on how to get the Caffe framwork compiled.">
+<meta name="keywords" content="caffe, machine learning">
+
+<!-- Facebook tags -->
+<meta property="og:title" content="Compiling Caffe under Mac OS X with Anaconda dependencies">
+<meta property="og:type" content="article">
+<meta property="og:url" content="http://thera-blog.com/posts/2016-03-29-compiling-caffe.html">
+<meta property="og:image" content="http://thera-blog.com/assets/imgs/avatar_100.png">
+<meta property="og:description" content="A guide on how to get the Caffe framwork compiled.">
+<meta property="og:site_name" content="A Thera-powered blog">
+<meta property="og:locale" content="en-GB">
+
+<!-- Twitter tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:description" content="A guide on how to get the Caffe framwork compiled." />
+<meta name="twitter:title" content="Compiling Caffe under Mac OS X with Anaconda dependencies" />
+<meta name="twitter:site" content="@GondolaRM" />
+<meta name="twitter:image" content="http://thera-blog.com/assets/imgs/avatar_100.png" />
+<meta name="twitter:creator" content="@GondolaRM" />
+
+
+  <link rel="canonical" href="http://thera-blog.com/posts/2016-03-29-compiling-caffe.html" />
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="alternate" type="application/atom+xml" title="John Doe" href="http://thera-blog.com/atom.xml" />
+
+  <link rel="stylesheet" href="/assets/all.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha256-k2/8zcNbxVIh5mnQ52A0r3a6jAgMGxFJFE2707UxGCk= sha512-ZV9KawG2Legkwp3nAlxLIVFudTauWuBpC10uEafMHYL0Sarrz5A7G79kXh5+5+woxQ5HM559XX2UZjMJ36Wplg==" crossorigin="anonymous">
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MGZJP4K"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div class="container">
+    <div class="four columns sidebar">
+      <nav>
+  <h1>Hi.</h1>
+  <a href="/">
+    <img src="/assets/imgs/avatar_200.png" id="logo" alt="Blog logo"/>
+  </a>
+  <h2>I'm <a href="/">John Doe</a>.</h2>
+  <div id="bio">
+    <p>💻I'm a compiler engineer at LAMP/EPFL, working on Scala 3.</p>
+    <p>Check out the books I've written:</p>
+    <p>📕<a href="https://www.amazon.com/Mastering-Functional-Programming-techniques-programming/dp/1788620798/">Mastering Functional Programming</a> – the motivation behind purely functional libraries such as Cats.</p>
+    <p>📕<a href="/assets/files/story-of-one-library.pdf">[Free] A Story of One Library</a> – a commit-by-commit analysis of an application from the very start. The challenges that were arising during the implementation are addressed in a functional way, so that the reader can understand the motivation behind the functional techniques.</p>
+  </div>
+  <div id="social">
+    Where to find me:
+    <div id="stalker">
+      <a title="Gondolav on Github" href="https://github.com/Gondolav">
+        <i class="fa fa-github-square"></i>
+      </a>
+
+      <a title="GondolaRM on Twitter" href="https://twitter.com/GondolaRM">
+        <i class="fa fa-twitter-square"></i>
+      </a>
+
+      <a title="John Doe on LinkedIn" href="https://www.linkedin.com/in/andrea-veneziano">
+        <i class="fa fa-linkedin-square"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+    </div>
+
+    <div class="eleven columns content">
+      <p class="meta">
+  Mar 29, 2016
+  <a href="/">
+    <i class="home fa fa-home"></i>
+  </a>
+</p>
+
+<h1 class="title">Compiling Caffe under Mac OS X with Anaconda dependencies</h1>
+<div id="post">
+  <div class="toc">
+<ul>
+<li><a href="#system">System</a></li>
+<li><a href="#setup">Setup</a><ul>
+<li><a href="#dependencies">Dependencies</a></li>
+<li><a href="#configuring-the-build">Configuring the Build</a></li>
+</ul></li>
+<li><a href="#compilation">Compilation</a><ul>
+<li><a href="#caffe">Caffe</a></li>
+<li><a href="#linking-caffe">Linking Caffe</a></li>
+<li><a href="#the-python-module">The Python module</a></li>
+<li><a href="#linking-the-python-module">Linking the Python module</a></li>
+</ul></li>
+</ul>
+</div>
+<div class="body">
+<p>In this post, I will describe how to install the <a href="http://caffe.berkeleyvision.org/">Caffe</a> neural network framework on Mac OS X as a Python library. Caffe is a work in progress, so its installation is not that trivial.</p>
+<h2 id="system">System</h2>
+<p>Here is the setup this guide was tested for:</p>
+<ul>
+<li>MacBook Pro 13' Late 2013</li>
+<li>Mac OS X El Capitan 10.11.3</li>
+<li><a href="https://www.continuum.io/downloads">Anaconda</a>: supplies most of the dependencies of Caffe</li>
+<li><a href="http://brew.sh/">Homebrew</a>: supplies some dependencies of Caffe</li>
+<li>Python 2.7 from the Anaconda platform</li>
+<li>CPU-only build</li>
+</ul>
+<h2 id="setup">Setup</h2>
+<p>We will compile a very basic working setup without the CUDA support.</p>
+<p>We will use <strong>Anaconda as our primary platform</strong>, so if something we need is available on Anaconda, we'll tend to use Anaconda to get it. If something is not present on Anaconda, we will use Homebrew to install it.</p>
+<p><strong>Here is a big picture of what we will do:</strong></p>
+<ol style="list-style-type: decimal">
+<li>Clone the Caffe repository</li>
+<li>Install all the required dependencies</li>
+<li>Configure the Caffe compilation by editing <code>Makefile.config</code></li>
+<li>Compile and test Caffe</li>
+<li>Compile and test the Python module for Caffe</li>
+</ol>
+<p>First of all, <strong>clone the Caffe <a href="https://github.com/BVLC/caffe">repository</a></strong> from GitHub to some directory and head to the official <a href="http://caffe.berkeleyvision.org/installation.html">installation guide</a>. Read carefully the guide so that you have a general idea of what needs to be done from the official point of view.</p>
+<h3 id="dependencies">Dependencies</h3>
+<p>You need to download all the dependencies of Caffe. They are listed in the <em>Prerequisites</em> section of the official guide.</p>
+<p>Here's which dependencies we'll download using Anaconda:</p>
+<ul>
+<li>protobuf</li>
+<li>hdf5</li>
+</ul>
+<p>Here's which dependencies we'll download using Homebrew:</p>
+<ul>
+<li>OpenBLAS</li>
+<li>Boost and Boost Python</li>
+<li>glog</li>
+<li>gflags</li>
+</ul>
+<p>Execute the following commands to <strong>download and install the dependencies</strong>:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">conda</span> install protobuf hdf5
+<span class="ex">brew</span> install homebrew/science/openblas boost boost-python glog gflags</code></pre></div>
+<h3 id="configuring-the-build">Configuring the Build</h3>
+<p>Before building Caffe, we need to configure it. Head to the root directory of the Caffe repository you cloned and execute the following command to <strong>create a <code>Makefile.config</code></strong> from an example one:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">cp</span> Makefile.config.example Makefile.config</code></pre></div>
+<p>Now open <code>Makefile.config</code> in your favorite text editor and let's start editing it.</p>
+<h4 id="makefile.config">Makefile.config</h4>
+<p>There's a lot of code in this file and we should edit it in some places. In this section I will describe only the parts that you need to do something about. Otherwise then described here, leave <code>Makefile.config</code> as it is.</p>
+<p>I will list the code in the state it should be edited to here. For example, if there's a comment to be uncommented, it will be uncommented here. You can find the required lines by searching for the text from the comments which obviously doesn't need to be changed.</p>
+<p>First, we should uncomment a block that explicitly states that <strong>we don't want a GPU support</strong>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># CPU-only switch (uncomment to build without GPU support).</span>
+<span class="ex">CPU_ONLY</span> := 1</code></pre></div>
+<p>There were some optional dependencies listed on the Caffe installation guide, but we skipped them, since we're aiming at the simplest setup possible. Uncomment the variables in the following block to <strong>specify that we don't have the optional dependencies</strong>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># uncomment to disable IO dependencies and corresponding data layers</span>
+<span class="ex">USE_OPENCV</span> := 0
+<span class="ex">USE_LEVELDB</span> := 0
+<span class="ex">USE_LMDB</span> := 0</code></pre></div>
+<p>We will be using OpenBLAS as our BLAS implementation, so <strong>set the <code>BLAS</code> variable</strong> to <code>open</code> in the following block.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># BLAS choice:</span>
+<span class="co"># atlas for ATLAS (default)</span>
+<span class="co"># mkl for MKL</span>
+<span class="co"># open for OpenBlas</span>
+<span class="ex">BLAS</span> := open</code></pre></div>
+<p>Since we have installed OpenBLAS via Homebrew, obviously we need to uncomment the following block to <strong>specify where Homebrew is located</strong>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># Homebrew puts openblas in a directory that is not on the standard search path</span>
+<span class="ex">BLAS_INCLUDE</span> := <span class="va">$(</span><span class="ex">shell</span> brew --prefix openblas<span class="va">)</span>/include
+<span class="ex">BLAS_LIB</span> := <span class="va">$(</span><span class="ex">shell</span> brew --prefix openblas<span class="va">)</span>/lib</code></pre></div>
+<p>Now we'll <strong>specify where Python resides</strong>. Since we're using Anaconda, we should use its Python and not the system one. It is always better to use tools from one platform then from several different ones.</p>
+<p>First, we should comment the first <code>PYTHON_INCLUDE</code> variable in the following block and uncomment <code>ANACONDA_HOME</code> and the second <code>PYTHON_INCLUDE</code>.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># NOTE: this is required only if you will compile the python interface.</span>
+<span class="co"># We need to be able to find Python.h and numpy/arrayobject.h.</span>
+<span class="co"># PYTHON_INCLUDE := /usr/include/python2.7 \</span>
+<span class="co">#     /usr/lib/python2.7/dist-packages/numpy/core/include</span>
+<span class="co"># Anaconda Python distribution is quite popular. Include path:</span>
+<span class="co"># Verify anaconda location, sometimes it&#39;s in root.</span>
+<span class="ex">ANACONDA_HOME</span> := <span class="va">$(</span><span class="ex">HOME</span><span class="va">)</span>/anaconda
+<span class="ex">PYTHON_INCLUDE</span> := <span class="va">$(</span><span class="ex">ANACONDA_HOME</span><span class="va">)</span>/include \
+    <span class="va">$(</span><span class="ex">ANACONDA_HOME</span><span class="va">)</span>/include/python2.7 \
+    <span class="va">$(</span><span class="ex">ANACONDA_HOME</span><span class="va">)</span>/lib/python2.7/site-packages/numpy/core/include \</code></pre></div>
+<p>In principle, the second <code>PYTHON_INCLUDE</code> will override the first one, but just to make sure and not ask for the troubles let's comment the first one.</p>
+<p><strong><code>ANACONDA_HOME</code> specifies where your Anaconda is installed</strong> - make sure the path is correct. Do <code>ls ~/anaconda</code> to see whether this folder exists, and if it is not, you should locate where you installed Anaconda and specify that path instead.</p>
+<p>In the next block, we need to <strong>specify the correct path to the Python libraries</strong>. By default the first line is <strong>not</strong> commented and the second one is. Since we are using Anaconda, we should uncomment the second line and comment the first one. This way <code>PYTHON_LIB</code> will point to Anaconda's <code>lib</code> folder.</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="co"># We need to be able to find libpythonX.X.so or .dylib.</span>
+<span class="co"># PYTHON_LIB := /usr/lib</span>
+<span class="ex">PYTHON_LIB</span> := <span class="va">$(</span><span class="ex">ANACONDA_HOME</span><span class="va">)</span>/lib</code></pre></div>
+<h2 id="compilation">Compilation</h2>
+<h3 id="caffe">Caffe</h3>
+<p>Now that we have everything set up, let's <strong>compile Caffe</strong> and its tests:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">make</span> all -j4
+<span class="fu">make</span> test -j4</code></pre></div>
+<p><code>-j4</code> here indicates the number of threads to use for the compilation - set it to the number of cores in your machine as recommended in the official guide. 4 in my case.</p>
+<h3 id="linking-caffe">Linking Caffe</h3>
+<p>Now comes the tricky part. We need to <strong>run the tests</strong> in order to verify that the installation went well. This is done with the following command that <strong>will result in an error</strong>:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">make</span> runtest</code></pre></div>
+<p>The error message will be:</p>
+<pre><code>.build_release/tools/caffe
+dyld: Library not loaded: @rpath/./libhdf5_hl.10.dylib</code></pre>
+<p>This means that <code>hdf5</code> library was not linked correctly to the <code>.build_release/tools/caffe</code> file. The linking errors are quite common in this project, but all of them are solved similarly to this one - by manually linking the file in question to the correct libraries. Later on we will write a short script to do this automatically.</p>
+<p>First, you may want to <strong>list the linked libraries</strong> of the file in question to see the other potential errors of this kind early:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">otool</span> -L .build_release/tools/caffe</code></pre></div>
+<p>You see that <code>libhdf5_hl.10.dylib</code> and <code>libhdf5.10.dylib</code> are linked the similar way and must belong to the same package (judging by the names):</p>
+<pre><code>  @rpath/./libhdf5_hl.10.dylib (compatibility version 11.0.0, current version 11.1.0)
+  @rpath/./libhdf5.10.dylib (compatibility version 11.0.0, current version 11.1.0)</code></pre>
+<p>So while <code>libhdf5_hl.10.dylib</code> is causing the error (for now), we'd better relink <code>libhdf5.10.dylib</code> too to prevent the potential error from its side.</p>
+<p>In order to <strong>relink them</strong>, run the following commands:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">install_name_tool</span> -change @rpath/./libhdf5_hl.10.dylib ~/anaconda/lib/libhdf5_hl.10.dylib .build_release/tools/caffe
+<span class="ex">install_name_tool</span> -change @rpath/./libhdf5.10.dylib ~/anaconda/lib/libhdf5.10.dylib .build_release/tools/caffe</code></pre></div>
+<p>The first argument of the commands is the path of the library to be relinked as shown in the <code>otool</code> output, the second is the actual location of the library and the third is the executable file the linking information of which we are editing. This means that <strong>there is no guarantee the second argument will work for you as specified here, since your <code>hdf5</code> library may reside in a different location</strong>. Previously in this guide we used Anaconda to install this library, so, if you did it, the path after <code>~/anaconda/</code> should be the same for you, but you need to check whether <code>~/anaconda/</code> is where your Anaconda is installed. If it is installed in a different location, write the path to it instead of <code>~/anaconda/</code>.</p>
+<p>Now, to make sure the linking have actually changed, <strong>list the linked libraries</strong> of the file in question:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">otool</span> -L .build_release/tools/caffe</code></pre></div>
+<p>For me, the linking for <code>hdf5</code> became as follows:</p>
+<pre><code>/Users/anatolii/anaconda/lib/libhdf5_hl.10.dylib (compatibility version 11.0.0, current version 11.1.0)
+/Users/anatolii/anaconda/lib/libhdf5.10.dylib (compatibility version 11.0.0, current version 11.1.0)</code></pre>
+<p>However, if you try to run <code>make runtest</code> again, it will <strong>fail yet again</strong> with a very similar error:</p>
+<pre><code>.build_release/test/test_all.testbin 0 --gtest_shuffle --gtest_filter=&quot;-*GPU*&quot;
+dyld: Library not loaded: @rpath/./libhdf5_hl.10.dylib</code></pre>
+<p>Apparently there's one more file with the bad linking to fix, and it is <code>.build_release/test/test_all.testbin</code>. In principle, you can repeat the procedure described above for this file too, but no one likes to do the same job twice, especially the programmers, and the commands to input are quite lengthy.</p>
+<p>So a better solution would be to <strong>write a shell script that will contain the corrections for all the known bad linkings</strong> and will be able to fix any file you provide it as an argument.</p>
+<p><strong>Create such a script</strong> and make it executable:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">touch</span> patch.sh
+<span class="fu">chmod</span> +x patch.sh</code></pre></div>
+<p>And write in it the following code you're already familiar with:</p>
+<pre><code>install_name_tool -change @rpath/./libhdf5_hl.10.dylib ~/anaconda/lib/libhdf5_hl.10.dylib $1
+install_name_tool -change @rpath/./libhdf5.10.dylib ~/anaconda/lib/libhdf5.10.dylib $1</code></pre>
+<p><strong>Make sure you specify the actual path to the library correctly!</strong></p>
+<p>Now patch the offending file:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">./patch.sh</span> .build_release/test/test_all.testbin</code></pre></div>
+<p>And try to run the tests again:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">make</span> runtest</code></pre></div>
+<p>If you've done everything right, the tests should be executed and should pass.</p>
+<h3 id="the-python-module">The Python module</h3>
+<p>We have just built and tested Caffe, now let's build the Caffe Python module so that we can use it from Python.</p>
+<p>First, let's <strong>install the Python dependencies</strong> for the module. From the root of the repository, run:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="kw">(</span><span class="bu">cd</span> python/<span class="kw">;</span> <span class="kw">for</span> <span class="ex">req</span> in <span class="va">$(</span><span class="fu">cat</span> requirements.txt<span class="va">)</span><span class="kw">;</span> <span class="kw">do</span> <span class="ex">pip</span> install <span class="va">$req</span><span class="kw">;</span> <span class="kw">done)</span></code></pre></div>
+<p>Now build the module:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="fu">make</span> pycaffe -j4</code></pre></div>
+<p>And add it to the <code>PYTHONPATH</code> environmental variable:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="bu">echo</span> <span class="st">&quot;export PYTHONPATH=</span><span class="va">$(</span><span class="bu">pwd</span><span class="va">)</span><span class="st">/python:</span><span class="dt">\$</span><span class="st">PYTHONPATH&quot;</span> <span class="op">&gt;&gt;</span> ~/.bash_profile</code></pre></div>
+<p><strong>Restart your terminal for the variable to be defined!</strong></p>
+<h3 id="linking-the-python-module">Linking the Python module</h3>
+<p>Now to the tricky part. Let's <strong>test whether we can import caffe</strong>. Open your python console <em>(make sure you are using Anaconda's Python, since all of the dependencies are defined for it. To check, run <code>which python</code>)</em> with <code>python</code>, and run there:</p>
+<div class="sourceCode"><pre class="sourceCode python"><code class="sourceCode python"><span class="im">import</span> caffe</code></pre></div>
+<p>You'll <strong>get an error</strong>:</p>
+<pre><code>ImportError: dlopen(/Users/anatolii/Projects/clones/caffe/python/caffe/_caffe.so, 2): Library not loaded: @rpath/./libhdf5_hl.10.dylib</code></pre>
+<p><code>hdf5</code> was not correctly linked here again, so let's patch it with the <code>patch.sh</code> file we've written earlier:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">./patch.sh</span> python/caffe/_caffe.so</code></pre></div>
+<p>Now if we run <code>import caffe</code> from the Python console again we'll get... <strong>another error</strong>, <code>Segmentation fault: 11</code>, which is much less descriptive kind of an error.</p>
+<p>As it turns out, <code>_caffe.so</code> uses the system Python by default, while we try to import it from the Anaconda's one. To fix the issue, we need to <strong>relink yet another library</strong> in <code>_caffe.so</code>: <code>libpython2.7.dylib</code>, we should make it be resolved from Anaconda's home. We can do it by:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">install_name_tool</span> -change libpython2.7.dylib ~/anaconda/lib/libpython2.7.dylib python/caffe/_caffe.so</code></pre></div>
+<p>But, since we have already agreed to store all the linking information in <code>patch.sh</code>, let's just open this file and edit it so that it looks as follows:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">install_name_tool</span> -change @rpath/./libhdf5_hl.10.dylib ~/anaconda/lib/libhdf5_hl.10.dylib <span class="va">$1</span>
+<span class="ex">install_name_tool</span> -change @rpath/./libhdf5.10.dylib ~/anaconda/lib/libhdf5.10.dylib <span class="va">$1</span>
+<span class="ex">install_name_tool</span> -change libpython2.7.dylib ~/anaconda/lib/libpython2.7.dylib <span class="va">$1</span></code></pre></div>
+<p><strong>Again, make sure you specify your libraries correctly</strong>.</p>
+<p>Let's patch <code>_caffe.so</code> again:</p>
+<div class="sourceCode"><pre class="sourceCode bash"><code class="sourceCode bash"><span class="ex">./patch.sh</span> python/caffe/_caffe.so</code></pre></div>
+<p>Now, when we run <code>import caffe</code> from the Python console, it imports well and doesn't fail with any errors.</p>
+<p>Since <code>patch.sh</code> specifies the correct linkings of the libraries, you can re-use it each time you recompile Caffe safely on any file that requires relinking.</p>
+</div>
+</div>
+
+
+      <div class="footer">
+        <div class="disclaimer">
+  <p>
+    © John Doe, 2016 - 2020 &mdash; built using <a href="https://github.com/swanson/lagom">Lagom theme</a>. Powered by <a href="https://github.com/anatoliykmetyuk/thera">Thera</a>. The sources of this site are availabel on <a href="https://github.com/anatoliykmetyuk/anatoliykmetyuk.github.io">GitHub</a>.
+  </p>
+</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,56 @@
+@startuml
+PolyApply <|-- Poly : extends
+"Case[P, L <: HList]" <.. PolyApply : implicit
+"Case[P, L <: HList]" <.. Poly : implicit
+
+Poly <|-- Poly1 : extends
+Poly <|-- Poly2 : extends
+
+Poly1 <--+ "Poly1#CaseBuilder[A]"    : inner class
+Poly2 <--+ "Poly2#CaseBuilder[A, B]" : inner class
+
+Poly1 <|-- "~>[F[_], G[_]]" : extends
+
+class PolyApply << (T,aqua) synthetic/polyapply.scala >> {
+  def apply[A](a:A)(implicit cse : Case[this.type, A::HNil]): cse.Result = cse(a::HNil)
+
+  def apply[A, B](a:A, b:B)(implicit cse : Case[this.type, A::B::HNil]): cse.Result = cse(a::b::HNil)
+}
+
+class "Case[P, L <: HList]" << (T,aqua) core/poly.scala >> {
+  ---
+  type Result
+
+  val value : L => Result
+
+  def apply(t : L) = value(t)
+}
+
+class Poly << (T,aqua) core/poly.scala >> {
+  def apply[R](implicit c: Case.Aux[this.type, HNil, R]): R = c()
+}
+
+class Poly1 << (T,aqua) synthetic/polyntraits.scala >> {
+  ---
+  def at[A] = new CaseBuilder[A]
+}
+
+class Poly2 << (T,aqua) synthetic/polyntraits.scala >> {
+  ---
+  def at[A, B] = new CaseBuilder[A, B]
+}
+
+class "Poly1#CaseBuilder[A]" << (T,aqua) synthetic/polyntraits.scala >> {
+  def apply[Res](fn: (A) => Res): Case[this.type, A::HNil]
+}
+
+class "Poly2#CaseBuilder[A, B]" << (T,aqua) synthetic/polyntraits.scala >> {
+  def apply[Res](fn: (A, B) => Res): Case[this.type, A::B::HNil]
+}
+
+class "~>[F[_], G[_]]" << (T,aqua) core/poly.scala >> {
+  def apply[T](f : F[T]) : G[T]
+
+  implicit def caseUniv[T]: Case.Aux[this.type, F[T]::HNil, G[T]] = at[F[T]](apply(_))
+}
+@enduml

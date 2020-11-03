@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MGZJP4K');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>John Doe - Introductory Functional Programming Course&#58; Learning the Intuitive Way</title>
+<meta name="author" content="John Doe" />
+
+<meta name="description" content="A Thera-powered blog">
+<meta name="keywords" content="scala, cats, functional programming, course, typelevel">
+
+<!-- Facebook tags -->
+<meta property="og:title" content="Introductory Functional Programming Course&#58; Learning the Intuitive Way">
+<meta property="og:type" content="article">
+<meta property="og:url" content="http://thera-blog.com/posts/2017-07-12-cats-intro-course.html">
+<meta property="og:image" content="http://thera-blog.com/assets/imgs/avatar_100.png">
+<meta property="og:description" content="A Thera-powered blog">
+<meta property="og:site_name" content="A Thera-powered blog">
+<meta property="og:locale" content="en-GB">
+
+<!-- Twitter tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:description" content="A Thera-powered blog" />
+<meta name="twitter:title" content="Introductory Functional Programming Course&#58; Learning the Intuitive Way" />
+<meta name="twitter:site" content="@GondolaRM" />
+<meta name="twitter:image" content="http://thera-blog.com/assets/imgs/avatar_100.png" />
+<meta name="twitter:creator" content="@GondolaRM" />
+
+
+  <link rel="canonical" href="http://thera-blog.com/posts/2017-07-12-cats-intro-course.html" />
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="alternate" type="application/atom+xml" title="John Doe" href="http://thera-blog.com/atom.xml" />
+
+  <link rel="stylesheet" href="/assets/all.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha256-k2/8zcNbxVIh5mnQ52A0r3a6jAgMGxFJFE2707UxGCk= sha512-ZV9KawG2Legkwp3nAlxLIVFudTauWuBpC10uEafMHYL0Sarrz5A7G79kXh5+5+woxQ5HM559XX2UZjMJ36Wplg==" crossorigin="anonymous">
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MGZJP4K"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div class="container">
+    <div class="four columns sidebar">
+      <nav>
+  <h1>Hi.</h1>
+  <a href="/">
+    <img src="/assets/imgs/avatar_200.png" id="logo" alt="Blog logo"/>
+  </a>
+  <h2>I'm <a href="/">John Doe</a>.</h2>
+  <div id="bio">
+    <p>💻I'm a compiler engineer at LAMP/EPFL, working on Scala 3.</p>
+    <p>Check out the books I've written:</p>
+    <p>📕<a href="https://www.amazon.com/Mastering-Functional-Programming-techniques-programming/dp/1788620798/">Mastering Functional Programming</a> – the motivation behind purely functional libraries such as Cats.</p>
+    <p>📕<a href="/assets/files/story-of-one-library.pdf">[Free] A Story of One Library</a> – a commit-by-commit analysis of an application from the very start. The challenges that were arising during the implementation are addressed in a functional way, so that the reader can understand the motivation behind the functional techniques.</p>
+  </div>
+  <div id="social">
+    Where to find me:
+    <div id="stalker">
+      <a title="Gondolav on Github" href="https://github.com/Gondolav">
+        <i class="fa fa-github-square"></i>
+      </a>
+
+      <a title="GondolaRM on Twitter" href="https://twitter.com/GondolaRM">
+        <i class="fa fa-twitter-square"></i>
+      </a>
+
+      <a title="John Doe on LinkedIn" href="https://www.linkedin.com/in/andrea-veneziano">
+        <i class="fa fa-linkedin-square"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+    </div>
+
+    <div class="eleven columns content">
+      <p class="meta">
+  Jul 12, 2017
+  <a href="/">
+    <i class="home fa fa-home"></i>
+  </a>
+</p>
+
+<h1 class="title">Introductory Functional Programming Course&#58; Learning the Intuitive Way</h1>
+<div id="post">
+  <div class="toc">
+
+</div>
+<div class="body">
+<blockquote>
+<p>He who has a why to live for can bear almost any how. ― Friedrich Nietzsche</p>
+</blockquote>
+<p>There is one problem with many educational resources on sciences and math: they do a very good job explaining the &quot;how&quot;, while completely ignoring the &quot;why&quot;. In such books, concepts will be well defined and theorems well explained. You will however find little information on how people came upon them, what problems they faced, why they solved them this way and not another.</p>
+<blockquote>
+<p>If you know the enemy and know yourself, you need not fear the result of a hundred battles. If you know yourself but not the enemy, for every victory gained you will also suffer a defeat. If you know neither the enemy nor yourself, you will succumb in every battle. ― Sun Tzu, The Art of War</p>
+</blockquote>
+<p>Failure to understand the &quot;why?&quot; behind the concepts you are using, the motivation for their existence, means &quot;not knowing yourself&quot;. It means you do not realize what problems they were intended to solve and the nature of the solution. You also don't see when a solution is a crutch and begs replacement - because deficiencies are a result of real-world pressures imposed on real-world people.</p>
+<p><a href="http://functorhub.com/">FunctorHub</a> was created to address the problem of &quot;why&quot;. It's aim is to provide all the information you need to understand the motivation and the essence behind advanced tools and techniques in Scala, while ignoring the noise. If you are looking to learn things like Cats, Typelevel libraries, compiler technologies like Scala Meta, purely functional architectures with Scala - this is your one-stop shop!</p>
+<p>Currently we only have one course - the introductory one about Cats. This will change soon! If you are interested in learning about the new courses as they appear, please consider subscribing to our newsletter.</p>
+<p>If you are interested, you are welcome to check the project out at <a href="http://functorhub.com/" class="uri">http://functorhub.com/</a>.</p>
+</div>
+</div>
+
+
+      <div class="footer">
+        <div class="disclaimer">
+  <p>
+    © John Doe, 2016 - 2020 &mdash; built using <a href="https://github.com/swanson/lagom">Lagom theme</a>. Powered by <a href="https://github.com/anatoliykmetyuk/thera">Thera</a>. The sources of this site are availabel on <a href="https://github.com/anatoliykmetyuk/anatoliykmetyuk.github.io">GitHub</a>.
+  </p>
+</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

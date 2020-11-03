@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MGZJP4K');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>John Doe - Dissecting Shapeless&#58; HLists</title>
+<meta name="author" content="John Doe" />
+
+<meta name="description" content="An overview of the architecture of Shapeless' heterogenous lists (HList).">
+<meta name="keywords" content="scala, shapeless, functional programming, category theory, heterogenous list, hlist, software architecture">
+
+<!-- Facebook tags -->
+<meta property="og:title" content="Dissecting Shapeless&#58; HLists">
+<meta property="og:type" content="article">
+<meta property="og:url" content="http://thera-blog.com/posts/2016-09-30-dissecting-shapeless-hlists.html">
+<meta property="og:image" content="http://thera-blog.com/assets/imgs/avatar_100.png">
+<meta property="og:description" content="An overview of the architecture of Shapeless' heterogenous lists (HList).">
+<meta property="og:site_name" content="A Thera-powered blog">
+<meta property="og:locale" content="en-GB">
+
+<!-- Twitter tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:description" content="An overview of the architecture of Shapeless' heterogenous lists (HList)." />
+<meta name="twitter:title" content="Dissecting Shapeless&#58; HLists" />
+<meta name="twitter:site" content="@GondolaRM" />
+<meta name="twitter:image" content="http://thera-blog.com/assets/imgs/avatar_100.png" />
+<meta name="twitter:creator" content="@GondolaRM" />
+
+
+  <link rel="canonical" href="http://thera-blog.com/posts/2016-09-30-dissecting-shapeless-hlists.html" />
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="alternate" type="application/atom+xml" title="John Doe" href="http://thera-blog.com/atom.xml" />
+
+  <link rel="stylesheet" href="/assets/all.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha256-k2/8zcNbxVIh5mnQ52A0r3a6jAgMGxFJFE2707UxGCk= sha512-ZV9KawG2Legkwp3nAlxLIVFudTauWuBpC10uEafMHYL0Sarrz5A7G79kXh5+5+woxQ5HM559XX2UZjMJ36Wplg==" crossorigin="anonymous">
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MGZJP4K"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div class="container">
+    <div class="four columns sidebar">
+      <nav>
+  <h1>Hi.</h1>
+  <a href="/">
+    <img src="/assets/imgs/avatar_200.png" id="logo" alt="Blog logo"/>
+  </a>
+  <h2>I'm <a href="/">John Doe</a>.</h2>
+  <div id="bio">
+    <p>💻I'm a compiler engineer at LAMP/EPFL, working on Scala 3.</p>
+    <p>Check out the books I've written:</p>
+    <p>📕<a href="https://www.amazon.com/Mastering-Functional-Programming-techniques-programming/dp/1788620798/">Mastering Functional Programming</a> – the motivation behind purely functional libraries such as Cats.</p>
+    <p>📕<a href="/assets/files/story-of-one-library.pdf">[Free] A Story of One Library</a> – a commit-by-commit analysis of an application from the very start. The challenges that were arising during the implementation are addressed in a functional way, so that the reader can understand the motivation behind the functional techniques.</p>
+  </div>
+  <div id="social">
+    Where to find me:
+    <div id="stalker">
+      <a title="Gondolav on Github" href="https://github.com/Gondolav">
+        <i class="fa fa-github-square"></i>
+      </a>
+
+      <a title="GondolaRM on Twitter" href="https://twitter.com/GondolaRM">
+        <i class="fa fa-twitter-square"></i>
+      </a>
+
+      <a title="John Doe on LinkedIn" href="https://www.linkedin.com/in/andrea-veneziano">
+        <i class="fa fa-linkedin-square"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+    </div>
+
+    <div class="eleven columns content">
+      <p class="meta">
+  Sep 30, 2016
+  <a href="/">
+    <i class="home fa fa-home"></i>
+  </a>
+</p>
+
+<h1 class="title">Dissecting Shapeless&#58; HLists</h1>
+<div id="post">
+  <div class="toc">
+<ul>
+<li><a href="#introduction">Introduction</a><ul>
+<li><a href="#the-head-of-an-empty-list">The head of an empty list</a></li>
+<li><a href="#hlist-architecture">HList architecture</a></li>
+</ul></li>
+<li><a href="#hlist-operations">HList operations</a><ul>
+<li><a href="#architecture">Architecture</a><ul>
+<li><a href="#syntax">Syntax</a></li>
+<li><a href="#operations">Operations</a></li>
+</ul></li>
+<li><a href="#the-head-of-an-empty-list-example-internals">The head of an empty list example internals</a></li>
+<li><a href="#length-of-hlists-and-type-level-natural-numbers">Length of <code>HList</code>s and type-level natural numbers</a></li>
+</ul></li>
+<li><a href="#conclusion">Conclusion</a></li>
+</ul>
+</div>
+<div class="body">
+<p>Shapeless is a Scala library that aims to make programming more type-safe. This means that you let the compiler know as much as possible about your program, so that if something is wrong with it, it is more likely to be caught during compile time.</p>
+<p>Since a lot of the information about a program is represented by types, Shapeless utilises them heavily to achieve its goal.</p>
+<p>In this post, I will cover the basics of Shapeless' <code>HList</code>s.</p>
+<h1 id="introduction">Introduction</h1>
+<p>An <code>HList</code> is a heterogenous list. It is a generalisation of Scala's tuples. While ordinary Scala <code>List</code>s can contain only elements of one type (<code>List[Int]</code> for <code>Int</code>s, <code>List[String]</code> for <code>String</code>s etc), <code>HLists</code> can contain many. This is done in a type-safe way: The compiler knows about the types of the elements in the list.</p>
+<p>Make sure to <code>import shapeless._</code> before running the examples. Here is a simple <code>HList</code>:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">scala&gt; <span class="kw">val</span> hlist = <span class="dv">1</span> :: <span class="dv">2</span> :: <span class="st">&quot;foo&quot;</span> :: <span class="fl">3.5</span> :: HNil
+hlist: shapeless.::[Int,shapeless.::[Int,shapeless.::[String,shapeless.::[Double,shapeless.<span class="fu">HNil</span>]]]] = <span class="dv">1</span> :: <span class="dv">2</span> :: foo :: <span class="fl">3.5</span> :: HNil</code></pre></div>
+<h2 id="the-head-of-an-empty-list">The head of an empty list</h2>
+<p>Consider an example where we want to get the head of a list. Some lists are empty and this edge case should be handled somehow.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">scala&gt; List(<span class="dv">1</span>).<span class="fu">head</span>
+res0: Int = <span class="dv">1</span>
+
+scala&gt; Nil.<span class="fu">head</span>
+java.<span class="fu">util</span>.<span class="fu">NoSuchElementException</span>: head of empty list
+  at scala.<span class="fu">collection</span>.<span class="fu">immutable</span>.<span class="fu">Nil</span>$.<span class="fu">head</span>(List.<span class="fu">scala</span>:<span class="dv">420</span>)
+  ... <span class="dv">42</span> elided
+
+scala&gt; (<span class="dv">1</span> :: HNil).<span class="fu">head</span>
+res2: Int = <span class="dv">1</span>
+
+scala&gt; HNil.<span class="fu">head</span>
+&lt;console&gt;:<span class="dv">15</span>: error: could not find <span class="kw">implicit</span> value <span class="kw">for</span> parameter c: shapeless.<span class="fu">ops</span>.<span class="fu">hlist</span>.<span class="fu">IsHCons</span>[shapeless.<span class="fu">HNil</span>.<span class="fu">type</span>]
+       HNil.<span class="fu">head</span></code></pre></div>
+<p>A normal Scala <code>List</code> throws an exception during runtime, but in case of <code>HNil</code>, a compilation error happens. Hence, with a <code>List</code> you won't know about the error until you run the program and this code line gets executed. In case of <code>HList</code>, the error will be identified during the compilation, allowing you to fix it right away and reduce the risk of bugs.</p>
+<h2 id="hlist-architecture">HList architecture</h2>
+<p>Consider our previous example:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">scala&gt; <span class="kw">val</span> hlist = <span class="dv">1</span> :: <span class="dv">2</span> :: <span class="st">&quot;foo&quot;</span> :: <span class="fl">3.5</span> :: HNil
+hlist: shapeless.::[Int,shapeless.::[Int,shapeless.::[String,shapeless.::[Double,shapeless.<span class="fu">HNil</span>]]]] = <span class="dv">1</span> :: <span class="dv">2</span> :: foo :: <span class="fl">3.5</span> :: HNil</code></pre></div>
+<p>The most interesting thing here is the type of this object and how it is constructed. It is <code>shapeless.::</code>, recursive in its right-hand side argument. This type is defined as follows:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">sealed</span> <span class="kw">trait</span> HList <span class="kw">extends</span> Product <span class="kw">with</span> Serializable
+
+<span class="kw">final</span> <span class="kw">case</span> <span class="kw">class</span> ::[+H, +T &lt;: HList](head : H, tail : T) <span class="kw">extends</span> HList</code></pre></div>
+<p>There are two methods to help you construct <code>HList</code>s: one for <code>HNil</code>, which is an empty list, and one for <code>HList</code>, which is an arbitrary list:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">trait</span> HNil <span class="kw">extends</span> HList {
+  <span class="kw">def</span> ::[H](h : H) = shapeless.::(h, <span class="kw">this</span>)
+}
+
+obejct HNil <span class="kw">extends</span> HNil
+
+<span class="kw">trait</span> HListOps {
+  <span class="kw">def</span> ::[H](h : H) : H :: L = shapeless.::(h, l)
+}</code></pre></div>
+<p>With <code>::</code> it is possible to construct lists by induction:</p>
+<ul>
+<li>Given an arbitrary <code>H</code> and <code>T &lt;: HList</code>, we can construct <code>H :: T</code>.</li>
+<li>An instance of an empty list <code>HNil</code> exists.</li>
+</ul>
+<p>This pattern of building types inductively is observed in many parts of Shapeless. It allows to use simple primitives and inductive definitions to compose types.</p>
+<h1 id="hlist-operations">HList operations</h1>
+<h2 id="architecture">Architecture</h2>
+<p>To learn about what you can do with <code>HList</code>s, you will want to have a look at HList's <a href="https://github.com/milessabin/shapeless/blob/master/core/src/main/scala/shapeless/syntax/hlists.scala">syntax</a> and <a href="https://github.com/milessabin/shapeless/blob/master/core/src/main/scala/shapeless/ops/hlists.scala">operations</a> sources. Since there are a lot of operations defined, it makes sense to understand the general architecture and the patterns that are used.</p>
+<h3 id="syntax">Syntax</h3>
+<p>The <a href="https://github.com/milessabin/shapeless/blob/master/core/src/main/scala/shapeless/syntax/hlists.scala">syntax</a> file features a <code>HListOps</code> class, to which <code>HLists</code> are implicitly converted. This class contains methods similar to the ones you can find in an ordinary Scala <code>List</code>.</p>
+<p>The operations defined in <code>HListOps</code> follow a common pattern. For example:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">head</span>(<span class="kw">implicit</span> c : IsHCons[L]) : c.<span class="fu">H</span> = c.<span class="fu">head</span>(l)</code></pre></div>
+<p>This method returns a first element of a list. Some observations to make here:</p>
+<ul>
+<li>The <code>IsHCons</code> implicit is a <em>type class</em> that encapsulates the required behaviour, and all the work is done by it. In this case, <code>IsHCons[L]</code> defines how to split a <code>L &lt;: HList</code> into a head and a tail. All the operations on <code>HList</code>s are defined by type classes in a similar manner.</li>
+<li>This type class is parameterised by <code>L</code> which is the type of the <code>HList</code> the operation is called on. This is how Shapeless provides type safety: If there is no appropriate type class for <code>L</code> in scope, the operation is impossible and a compile-time error will happen.</li>
+<li>The return type <code>c.H</code> of the method is defined by the type class. Hence the logic responsible for <code>implicit</code> resolution is also responsible for the output type computation. The more complex this logic is, the more complex computations with types are possible during compile time.</li>
+</ul>
+<h3 id="operations">Operations</h3>
+<p>The <a href="https://github.com/milessabin/shapeless/blob/master/core/src/main/scala/shapeless/ops/hlists.scala">operations</a> file contains all the type classes required by the <code>syntax</code>: their <code>trait</code>s and <code>implicit def</code>s to resolve them.</p>
+<p>To understand their architecture, let us look at an example of <code>IsHCons</code> type class. This is a type class required implicitly by the <code>head</code> method discussed above, and it defines how to split an <code>HList</code> <code>L</code> into a head <code>H</code> and a tail <code>T &lt;: HList</code>:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala">  <span class="kw">trait</span> IsHCons[L &lt;: HList] <span class="kw">extends</span> Serializable {
+    <span class="kw">type</span> H
+    <span class="kw">type</span> T &lt;: HList
+
+    <span class="kw">def</span> <span class="fu">head</span>(l : L) : H
+    <span class="kw">def</span> <span class="fu">tail</span>(l : L) : T
+  }
+
+  <span class="kw">object</span> IsHCons {
+    <span class="kw">def</span> apply[L &lt;: HList](<span class="kw">implicit</span> isHCons: IsHCons[L]): Aux[L, isHCons.<span class="fu">H</span>, isHCons.<span class="fu">T</span>] = isHCons
+
+    <span class="kw">type</span> Aux[L &lt;: HList, H0, T0 &lt;: HList] = IsHCons[L] { <span class="kw">type</span> H = H0; <span class="kw">type</span> T = T0 }
+    <span class="kw">implicit</span> <span class="kw">def</span> hlistIsHCons[H0, T0 &lt;: HList]: Aux[H0 :: T0, H0, T0] =
+      <span class="kw">new</span> IsHCons[H0 :: T0] {
+        <span class="kw">type</span> H = H0
+        <span class="kw">type</span> T = T0
+
+        <span class="kw">def</span> <span class="fu">head</span>(l : H0 :: T0) : H = l.<span class="fu">head</span>
+        <span class="kw">def</span> <span class="fu">tail</span>(l : H0 :: T0) : T = l.<span class="fu">tail</span>
+      }
+  }</code></pre></div>
+<p>Some observations to make here:</p>
+<ul>
+<li>A type class in Shapeless usually is a <code>trait</code>, type-parameterised by the types of its input.</li>
+<li>Output types are usually defined via the <code>type</code> keyword.</li>
+<li>type classes have companion objects. They usually consist of the following:</li>
+<li>An <code>Aux</code> type definition to easily define the output types of the type classes.</li>
+<li>An <code>apply</code> method to conveniently resolve a type class instance.</li>
+<li>One or more <code>implicit def</code> that output the type class instances.</li>
+</ul>
+<h2 id="the-head-of-an-empty-list-example-internals">The head of an empty list example internals</h2>
+<p>Consider our example with a head of an empty list discussed above. How exactly does the compiler verify that an operation is possible for <code>Int :: HNil</code>, but is not possible in case of <code>HNil</code>?</p>
+<p>First, the target <code>HList</code> is converted implicitly to <code>HListOps</code>, which has the method <code>head</code>. This method can be called only if the scope defines the required type class.</p>
+<p>There is one <code>implicit def</code> in the companion object of <code>IsHCons</code>. It has the following signature:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">def</span> hlistIsHCons[H0, T0 &lt;: HList]: IsHCons.<span class="fu">Aux</span>[H0 :: T0, H0, T0]</code></pre></div>
+<p>In case of <code>Int :: HNil</code>, the required type is <code>IsHCons[Int :: HNil]</code> and <code>IsHCons.Aux[H0 :: T0, H0, T0]</code> conforms to it because this type is an alias for <code>IsHCons[H0 :: T0]</code> with <code>H0</code> and <code>T0</code> output types (one for the head and one for the tail). So the implicit is found and the compilation succeeds.</p>
+<p>In case of <code>HNil</code>, however, the required type class has the type of <code>IsHCons[HNil]</code>. Since <code>IsHCons.Aux[H0 :: T0, H0, T0]</code> does not conform to this type (<code>HNil</code> cannot be represented as <code>H0 :: T0</code>), the compiler cannot find the type class and the compilation fails.</p>
+<h2 id="length-of-hlists-and-type-level-natural-numbers">Length of <code>HList</code>s and type-level natural numbers</h2>
+<p>Recall that the output types of the <code>HList</code> operations are often defined by the type classes, which are resolved implicitly. Hence, one can argue that the output types are computed by the same capabilities that resolve the implicits, and the complexity of the computations you can perform with the types in such a manner is proportional to the complexity of the implicits' resolution mechanics.</p>
+<p>In Shapeless, a common pattern is to define implicit <code>def</code>s that themselves require some implicit type classes. For example, the following implicits are available for the <code>Length</code> type class, which computes the length of a given <code>HList</code>:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">def</span> hnilLength[L &lt;: HNil]: Length.<span class="fu">Aux</span>[L, _0]
+
+<span class="kw">implicit</span> <span class="kw">def</span> hlistLength[H, T &lt;: HList, N &lt;: Nat](<span class="kw">implicit</span> lt : Length.<span class="fu">Aux</span>[T, N], sn : Witness.<span class="fu">Aux</span>[Succ[N]]): Length.<span class="fu">Aux</span>[H :: T, Succ[N]]</code></pre></div>
+<p>A key thing to notice here is that <code>implicit def hlistLength</code> itself requires implicit arguments. Moreover, the output type of one of these arguments is the same as the one of the <code>implicit def hlistLength</code> method itself. This triggers inductive search for implicits during compile time, where in order to resolve <code>Length[H :: T]</code> type class, we need to resolve <code>Length[T]</code> first.</p>
+<p>We also have a <code>def</code> for <code>HNil</code> in scope, which doesn't take any implicit arguments and represents the base case of the induction. These two methods give us an inductive system:</p>
+<ul>
+<li>A length of a list is the length of its tail plus one.</li>
+<li>A length of an empty list is 0.</li>
+</ul>
+<p>Hence, for a list of length <code>n</code>, <code>n + 1</code> <code>Length</code> type classes are needed to be resolved. For example, <code>Length[Int :: Int :: HNil]</code> requires <code>Length[Int :: HNil]</code>, which requires <code>Length[HNil]</code>, which is <code>hnilLength</code>.</p>
+<p>The recursive nature of the resolution of implicits and the fact that the computations on types can be carried out using the same mechanics give rise to the type-level representation of natural numbers. <code>Nat</code> is their common trait, <code>_0 &lt;: Nat</code> is <code>0</code>, and <code>Succ[N &lt;: Nat] &lt;: Nat</code> represents the successor of <code>N</code>.</p>
+<p>Now, the length of <code>HNil</code> is <code>_0</code> in <code>Length.Aux[L &lt;: HNil, _0]</code>. The input type is <code>L</code> and the output is <code>_0</code>. The length of <code>H :: T</code> given <code>T &lt;: HList</code> is <code>Succ[N]</code>, where <code>N</code> is bound by <code>Length.Aux[T, N]</code>.</p>
+<h1 id="conclusion">Conclusion</h1>
+<p>This concludes a brief overview of Shapeless' <code>HList</code>s. Main points covered:</p>
+<ul>
+<li>Shapeless makes programs more type-safe, hence decreasing the risk of bugs.</li>
+<li>Syntax of the <code>HList</code>'s operations is defined in the <code>HListOps</code> trait, and each operation method is implemented via a type class.</li>
+<li>Type classes' instances are available via <code>implicit def</code>s of the companion objects of their traits.</li>
+<li>The result type of the operations of a type class resolved in this manner is computed during compile time.</li>
+<li>Often <code>implicit def</code>s themselves require other implicits, and the resolution passes several levels. This allows inductive definitions of both runtime value computations and compile time type computations.</li>
+</ul>
+<p>In the next article, I will cover Shapeless polymorphic functions, their architecture and how they can be used with <code>HList</code>s.</p>
+</div>
+</div>
+
+
+      <div class="footer">
+        <div class="disclaimer">
+  <p>
+    © John Doe, 2016 - 2020 &mdash; built using <a href="https://github.com/swanson/lagom">Lagom theme</a>. Powered by <a href="https://github.com/anatoliykmetyuk/thera">Thera</a>. The sources of this site are availabel on <a href="https://github.com/anatoliykmetyuk/anatoliykmetyuk.github.io">GitHub</a>.
+  </p>
+</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

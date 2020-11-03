@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<!--[if lt IE 7 ]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7 ]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8 ]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!--><html lang="en"> <!--<![endif]-->
+<head>
+  <!-- Google Tag Manager -->
+<script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+})(window,document,'script','dataLayer','GTM-MGZJP4K');</script>
+<!-- End Google Tag Manager -->
+
+  <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>John Doe - Effect Extensions Pattern</title>
+<meta name="author" content="John Doe" />
+
+<meta name="description" content="A pattern to convert to your effect type from side effects and other effect types.">
+<meta name="keywords" content="scala, programming, functional programming, category theory, effect type, side effect, effect, typelevel, cats, monad, monad transformer">
+
+<!-- Facebook tags -->
+<meta property="og:title" content="Effect Extensions Pattern">
+<meta property="og:type" content="article">
+<meta property="og:url" content="http://thera-blog.com/posts/2018-08-18-effect-extensions.html">
+<meta property="og:image" content="http://thera-blog.com/assets/imgs/avatar_100.png">
+<meta property="og:description" content="A pattern to convert to your effect type from side effects and other effect types.">
+<meta property="og:site_name" content="A Thera-powered blog">
+<meta property="og:locale" content="en-GB">
+
+<!-- Twitter tags -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:description" content="A pattern to convert to your effect type from side effects and other effect types." />
+<meta name="twitter:title" content="Effect Extensions Pattern" />
+<meta name="twitter:site" content="@GondolaRM" />
+<meta name="twitter:image" content="http://thera-blog.com/assets/imgs/avatar_100.png" />
+<meta name="twitter:creator" content="@GondolaRM" />
+
+
+  <link rel="canonical" href="http://thera-blog.com/posts/2018-08-18-effect-extensions.html" />
+
+  <link href="//fonts.googleapis.com/css?family=Open+Sans:600,800" rel="stylesheet" type="text/css">
+  <link rel="shortcut icon" href="/favicon.png">
+  <link rel="alternate" type="application/atom+xml" title="John Doe" href="http://thera-blog.com/atom.xml" />
+
+  <link rel="stylesheet" href="/assets/all.css">
+  <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha256-k2/8zcNbxVIh5mnQ52A0r3a6jAgMGxFJFE2707UxGCk= sha512-ZV9KawG2Legkwp3nAlxLIVFudTauWuBpC10uEafMHYL0Sarrz5A7G79kXh5+5+woxQ5HM559XX2UZjMJ36Wplg==" crossorigin="anonymous">
+</head>
+<body>
+  <!-- Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-MGZJP4K"
+height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+<!-- End Google Tag Manager (noscript) -->
+
+  <div class="container">
+    <div class="four columns sidebar">
+      <nav>
+  <h1>Hi.</h1>
+  <a href="/">
+    <img src="/assets/imgs/avatar_200.png" id="logo" alt="Blog logo"/>
+  </a>
+  <h2>I'm <a href="/">John Doe</a>.</h2>
+  <div id="bio">
+    <p>💻I'm a compiler engineer at LAMP/EPFL, working on Scala 3.</p>
+    <p>Check out the books I've written:</p>
+    <p>📕<a href="https://www.amazon.com/Mastering-Functional-Programming-techniques-programming/dp/1788620798/">Mastering Functional Programming</a> – the motivation behind purely functional libraries such as Cats.</p>
+    <p>📕<a href="/assets/files/story-of-one-library.pdf">[Free] A Story of One Library</a> – a commit-by-commit analysis of an application from the very start. The challenges that were arising during the implementation are addressed in a functional way, so that the reader can understand the motivation behind the functional techniques.</p>
+  </div>
+  <div id="social">
+    Where to find me:
+    <div id="stalker">
+      <a title="Gondolav on Github" href="https://github.com/Gondolav">
+        <i class="fa fa-github-square"></i>
+      </a>
+
+      <a title="GondolaRM on Twitter" href="https://twitter.com/GondolaRM">
+        <i class="fa fa-twitter-square"></i>
+      </a>
+
+      <a title="John Doe on LinkedIn" href="https://www.linkedin.com/in/andrea-veneziano">
+        <i class="fa fa-linkedin-square"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+
+    </div>
+
+    <div class="eleven columns content">
+      <p class="meta">
+  Aug 18, 2018
+  <a href="/">
+    <i class="home fa fa-home"></i>
+  </a>
+</p>
+
+<h1 class="title">Effect Extensions Pattern</h1>
+<div id="post">
+  <div class="toc">
+<ul>
+<li><a href="#example">Example</a><ul>
+<li><a href="#effect-system-for-the-example">Effect System for the Example</a></li>
+<li><a href="#handler-side-effects">Handler Side Effects</a></li>
+</ul></li>
+<li><a href="#effect-extensions">Effect Extensions</a></li>
+<li><a href="#implementation-of-the-pattern">Implementation of the pattern</a><ul>
+<li><a href="#strategy">Strategy</a></li>
+<li><a href="#entire-pattern">Entire Pattern</a></li>
+</ul></li>
+<li><a href="#running-the-example">Running the Example</a><ul>
+<li><a href="#successful-run">Successful Run</a></li>
+<li><a href="#failure-circe">Failure: Circe</a></li>
+<li><a href="#failure-file-input">Failure: File Input</a></li>
+</ul></li>
+<li><a href="#previous-work">Previous Work</a></li>
+<li><a href="#directions-for-improvement">Directions for Improvement</a></li>
+</ul>
+</div>
+<div class="body">
+<p>When programming in a purely functional style, we aim to reify side effects into data structures called <em>effect types</em>. An effect type you are using should be the same throughout the entire application so that different parts of the application are composable.</p>
+<p>When having multiple side effects and a single effect type to express them, the problem arises on how to convert the former to the latter conveniently. Also, when working with functional libraries, we need to translate from their effect systems – <em>foreign effect systems</em> – to the one used by our application. We need such translations because purely functional libraries – e.g. <a href="https://typelevel.org/">Typelevel</a> stack – employ effect systems that are usually different from the one used by our application.</p>
+<p>In this article, I would like to describe my approach for working with these conversions. We will use an analogy of how operating systems use file extensions to classify files by their type. We will apply the analogy to an example of HTTP handlers for a purely functional web server.</p>
+<h1 id="example">Example</h1>
+<p>Let us look at a problem of request handling by a web server. We need to define a handler method that accepts request body and performs specific actions based on this body. Precisely, the body is JSON. It contains the name of a file on the server. The handler must read the file and send its contents back to the requesting user. For simplicity, sending the content to the end user is modelled as command line output, and we only consider the request body, not an entire HTTP request. The result type of the handler should be an effect type encoding the actions described above. How should we define this effect type?</p>
+<h2 id="effect-system-for-the-example">Effect System for the Example</h2>
+<p>For web servers, non-blocking execution and error reporting are essential. Therefore, we are using the following type as an effect type:</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/package.scala" snippet="Ef"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">type</span> Ef[A] = EitherT[IO, String, A]</code></pre></div>
+<p>We are using the <code>EitherT</code> type to combine the effect types <code>IO</code> and <code>Either</code>. <code>Either</code> is implied by <code>EitherT</code> which is a monad transformer for <code>Either</code>. <code>IO</code> is responsible for asynchrony (hence non-blocking computations), and <code>Either</code> – for error reporting. In <code>Either</code>, we represent errors as <code>String</code>s under <code>Left</code>.</p>
+<p>We define the effect system in the package object so that it is accessible from the entire application. An <em>effect system</em> is the effect type we use and the utility methods and classes we employ to work with it throughout the code.</p>
+<p>What utility methods and classes do we need in our effect system? To define them, let us look at the side effects we need to deal with in our request handler.</p>
+<h2 id="handler-side-effects">Handler Side Effects</h2>
+<p>The signature of the handler is as follows.</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">requestHandler</span>(requestBody: String): Ef[Unit]</code></pre></div>
+<p>The handler receives a JSON body and performs the following business logic steps:</p>
+<ol style="list-style-type: decimal">
+<li>Parse the body using Circe, the JSON library for Scala.</li>
+<li>Log the parsing results to the console.</li>
+<li>Read the file name from JSON. The name is stored under the <code>file</code> key.</li>
+<li>Read the file contents as a string.</li>
+<li>Output the file contents to the command line (the output effect simulates sending the contents as a response to the end user).</li>
+</ol>
+<p>In the above business logic, we encounter the following side effects and foreign effect types:</p>
+<ol style="list-style-type: decimal">
+<li>Foreign Effect: <code>Either</code>. In Circe, unsafe operations return the result under the effect type <code>Either[E &lt;: io.circe.Error, A]</code>. <code>io.circe.Error</code> is an exception type, and <code>A</code> is a result type. We encounter this effect type when parsing and accessing JSON, points (1), (3) in the handler algorithm above.</li>
+<li>Side Effect: Suspension. We need to lift operations like the output to the command line into the IO context. We encounter this side effect when printing to the command line, points (2), (5) above.</li>
+<li>Side Effect: throwing of exceptions. We need to handle OOP-style computations that may throw exceptions. We need to capture these exceptions under the <code>Ef</code> type as errors. We encounter this side effect in point (4) above.</li>
+</ol>
+<p>It is necessary to define how we are going to translate each of these side effects and foreign effect types into our effect type <code>Ef</code>. We need these translations to be declarative and easy to use so that they don't distract us from writing the business logic. Precisely, for each side effect and foreign effect type, we need a translation formalism that captures their meaning into <code>Ef</code>, along with the result they compute. How should we define such translation formalisms?</p>
+<h1 id="effect-extensions">Effect Extensions</h1>
+<p>Operating systems distinguish between different file types using extensions in the files' names - <code>.scala</code>, <code>.txt</code>, <code>.png</code> etc. Based on these extensions, an operating system knows which software to use to open the file. The file extensions technique is a formalism – a dot followed by a descriptive extension name. This formalism is used to declare the types of the files.</p>
+<p>Effect Extensions pattern applies the formalism of file extensions to translate different side effects and foreign effect types to the effect type of the application we are writing. Here is how the request handler looks under the effect extensions pattern.</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/Main.scala" snippet="requestHandler"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">def</span> <span class="fu">requestHandler</span>(requestBody: String): Ef[Unit] =
+  <span class="kw">for</span> {
+    bodyJson &lt;- <span class="fu">parse</span>(requestBody)                   .<span class="fu">etr</span>
+    _        &lt;- <span class="fu">println</span>(s<span class="st">&quot;Parsed body: $bodyJson&quot;</span>)   .<span class="fu">sus</span>
+    fileName &lt;- bodyJson.<span class="fu">hcursor</span>.<span class="fu">get</span>[String](<span class="st">&quot;file&quot;</span>) .<span class="fu">etr</span>
+    fileBody &lt;- File(fileName).<span class="fu">contentAsString</span>       .<span class="fu">exn</span>
+    _        &lt;- <span class="fu">println</span>(s<span class="st">&quot;Parsed file: $fileBody&quot;</span>)   .<span class="fu">sus</span>
+  } <span class="kw">yield</span> ()</code></pre></div>
+<p>We are using the following imports here:</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/Main.scala" snippet="imports"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> cats.<span class="fu">_</span>, cats.<span class="fu">implicits</span>.<span class="fu">_</span>, cats.<span class="fu">data</span>.<span class="fu">_</span>, cats.<span class="fu">effect</span>.<span class="fu">_</span>
+<span class="kw">import</span> io.<span class="fu">circe</span>.<span class="fu">_</span>, io.<span class="fu">circe</span>.<span class="fu">generic</span>.<span class="fu">auto</span>.<span class="fu">_</span>, io.<span class="fu">circe</span>.<span class="fu">parser</span>.<span class="fu">_</span>, io.<span class="fu">circe</span>.<span class="fu">syntax</span>.<span class="fu">_</span>
+<span class="kw">import</span> better.<span class="fu">files</span>.<span class="fu">_</span>, better.<span class="fu">files</span>.<span class="fu">File</span>.<span class="fu">_</span>, java.<span class="fu">io</span>.{ File =&gt; JFile }</code></pre></div>
+<p>In the <code>requestHandler</code> body, the side-effecting expressions and expressions coming from third-party libraries imported above have the following types:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">parse</span>(requestBody)                  : Either[X &lt;: io.<span class="fu">circe</span>.<span class="fu">Error</span>, io.<span class="fu">circe</span>.<span class="fu">Json</span>]  <span class="co">// Parses String to Json</span>
+<span class="fu">println</span>(s<span class="st">&quot;Parsed body: $bodyJson&quot;</span>)  : Unit
+bodyJson.<span class="fu">hcursor</span>.<span class="fu">get</span>[String](<span class="st">&quot;file&quot;</span>): Either[X &lt;: io.<span class="fu">circe</span>.<span class="fu">Error</span>, String]  <span class="co">// Get a String under a given key from a JSON object</span>
+File(fileName).<span class="fu">contentAsString</span>      : String  <span class="co">// Read a file as a String. May throw exceptions.</span>
+<span class="fu">println</span>(s<span class="st">&quot;Parsed file: $fileBody&quot;</span>)  : Unit</code></pre></div>
+<p>Every side effect and foreign effect type we have identified in the <a href="#handler-side-effects">Handler Side Effects</a> subsection has its own extension. The semantics of each extension with respect to the expression it is called on is as follows:</p>
+<ol style="list-style-type: decimal">
+<li><code>.etr</code> – lifts <code>Either</code> to <code>Ef</code>.</li>
+<li><code>.sus</code> – wraps the (by-name) expression into an <code>IO</code> context, then lifts this <code>IO</code> to <code>Ef</code>.</li>
+<li><code>.exn</code> – executes the expression, catches all exceptions that occurred as part of this execution. These exceptions are converted into a <code>Left</code> if they occur, which is lifted to <code>Ef</code>.</li>
+</ol>
+<p>All of the extensions produce an <code>Ef</code> from the expressions they are called on.</p>
+<p>How do we implement the effect extensions as a part of our effect system?</p>
+<h1 id="implementation-of-the-pattern">Implementation of the pattern</h1>
+<h2 id="strategy">Strategy</h2>
+<p>We are using the Rich Wrapper pattern to inject effect extensions into the expression types we want to use these extensions on.</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/package.scala" snippet="RichWrappers" ignore-other-snippets="true"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">def</span> showExn: Show[Throwable] = Show.<span class="fu">show</span>[Throwable] { e =&gt;
+  s<span class="st">&quot;${e.getMessage}</span><span class="ch">\n</span><span class="st">${e.getStackTrace.mkString(&quot;</span>\n<span class="st">&quot;)}&quot;</span>
+}
+
+<span class="kw">implicit</span> <span class="kw">class</span> RichEither[E: Show, A](x: Either[E, A]) {
+  <span class="kw">def</span> etr: Ef[A] = EitherT.<span class="fu">fromEither</span>[IO](x).<span class="fu">leftMap</span>(_.<span class="fu">show</span>)
+}
+
+<span class="kw">implicit</span> <span class="kw">class</span> RichDelayed[A](x: =&gt; A) {
+  <span class="kw">def</span> sus: Ef[A] = EitherT.<span class="fu">right</span>[String](IO { x })
+  <span class="kw">def</span> exn: Ef[A] = <span class="fu">Try</span>(x).<span class="fu">toEither</span>.<span class="fu">etr</span>
+}</code></pre></div>
+<p>We also define the capability to evaluate the <code>Ef</code> type synchronously.</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/package.scala" snippet="RichEf"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">implicit</span> <span class="kw">class</span> RichEf[A](ef: Ef[A]) {
+  <span class="kw">def</span> run: A = ef.<span class="fu">value</span>.<span class="fu">unsafeRunSync</span>().<span class="fu">bimap</span>(
+    err =&gt; <span class="kw">throw</span> <span class="kw">new</span> RuntimeException(s<span class="st">&quot;Error Happened:</span><span class="ch">\n</span><span class="st">$err&quot;</span>)
+  , res =&gt; res).<span class="fu">merge</span>
+}</code></pre></div>
+<h2 id="entire-pattern">Entire Pattern</h2>
+<p>The Effect Extensions pattern defines the following two components:</p>
+<ol style="list-style-type: decimal">
+<li>An Effect Type we are going to use throughout the entire application.</li>
+<li>Effect Extensions, defined as rich wrappers.</li>
+</ol>
+<p>We define the pattern in the package object of the application. Here is how it looks in its entirety:</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/package.scala" ignore-other-snippets="true"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> scala.<span class="fu">util</span>.<span class="fu">Try</span>
+<span class="kw">import</span> cats.<span class="fu">_</span>, cats.<span class="fu">implicits</span>.<span class="fu">_</span>, cats.<span class="fu">data</span>.<span class="fu">_</span>, cats.<span class="fu">effect</span>.<span class="fu">_</span>
+
+<span class="kw">package</span> <span class="kw">object</span> effectextensions {
+  <span class="kw">type</span> Ef[A] = EitherT[IO, String, A]
+
+  <span class="kw">implicit</span> <span class="kw">def</span> showExn: Show[Throwable] = Show.<span class="fu">show</span>[Throwable] { e =&gt;
+    s<span class="st">&quot;${e.getMessage}</span><span class="ch">\n</span><span class="st">${e.getStackTrace.mkString(&quot;</span>\n<span class="st">&quot;)}&quot;</span>
+  }
+
+  <span class="kw">implicit</span> <span class="kw">class</span> RichEither[E: Show, A](x: Either[E, A]) {
+    <span class="kw">def</span> etr: Ef[A] = EitherT.<span class="fu">fromEither</span>[IO](x).<span class="fu">leftMap</span>(_.<span class="fu">show</span>)
+  }
+
+  <span class="kw">implicit</span> <span class="kw">class</span> RichDelayed[A](x: =&gt; A) {
+    <span class="kw">def</span> sus: Ef[A] = EitherT.<span class="fu">right</span>[String](IO { x })
+    <span class="kw">def</span> exn: Ef[A] = <span class="fu">Try</span>(x).<span class="fu">toEither</span>.<span class="fu">etr</span>
+  }
+
+  <span class="kw">implicit</span> <span class="kw">class</span> RichEf[A](ef: Ef[A]) {
+    <span class="kw">def</span> run: A = ef.<span class="fu">value</span>.<span class="fu">unsafeRunSync</span>().<span class="fu">bimap</span>(
+      err =&gt; <span class="kw">throw</span> <span class="kw">new</span> RuntimeException(s<span class="st">&quot;Error Happened:</span><span class="ch">\n</span><span class="st">$err&quot;</span>)
+    , res =&gt; res).<span class="fu">merge</span>
+  }
+}</code></pre></div>
+<h1 id="running-the-example">Running the Example</h1>
+<h2 id="successful-run">Successful Run</h2>
+<p>Let us assume that we have a file named <code>foo.txt</code> in the root of the project with the content of <code>&quot;Hello World!&quot;</code>. We can achieve a successful execution of the handler as follows.</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/Main.scala" snippet="Successful"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">requestHandler</span>(<span class="st">&quot;&quot;&quot;{&quot;</span>file<span class="st">&quot;: &quot;</span>foo.<span class="fu">txt</span><span class="st">&quot;}&quot;&quot;&quot;</span>) .<span class="fu">run</span></code></pre></div>
+<p>The output is as follows:</p>
+<p><a href="/assets/visuals/effect-extensions/successful-run.png"><img src="/assets/visuals/effect-extensions/successful-run.png" width="100%" target="_blank"/></a></p>
+<h2 id="failure-circe">Failure: Circe</h2>
+<p>We can feed a malformed JSON string to the handler to simulate a failure of the body parsing stage:</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/Main.scala" snippet="CirceParserFailed"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">requestHandler</span>(<span class="st">&quot;&quot;&quot;{&quot;</span>file<span class="st">&quot;: &quot;</span>foo.<span class="fu">txt</span>}<span class="st">&quot;&quot;&quot;) .run</span></code></pre></div>
+<p><a href="/assets/visuals/effect-extensions/circe-parser-failure.png"><img src="/assets/visuals/effect-extensions/circe-parser-failure.png" width="100%" target="_blank"/></a></p>
+<p>We can also have a correctly formatted JSON which does not have the <code>file</code> key the handler needs:</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/Main.scala" snippet="CirceKeyFailed"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">requestHandler</span>(<span class="st">&quot;&quot;&quot;{&quot;</span>stuff<span class="st">&quot;: &quot;</span>foo.<span class="fu">txt</span><span class="st">&quot;}&quot;&quot;&quot;</span>) .<span class="fu">run</span></code></pre></div>
+<p><a href="/assets/visuals/effect-extensions/circe-key-failed.png"><img src="/assets/visuals/effect-extensions/circe-key-failed.png" width="100%" target="_blank"/></a></p>
+<h2 id="failure-file-input">Failure: File Input</h2>
+<p>Finally, we can simulate the failure to read a file by providing a name of a file that does not exist.</p>
+<div class="sourceCode" include="code/effect-extensions/src/main/scala/effectextensions/Main.scala" snippet="FileFailed"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="fu">requestHandler</span>(<span class="st">&quot;&quot;&quot;{&quot;</span>file<span class="st">&quot;: &quot;</span>stuff<span class="st">&quot;}&quot;&quot;&quot;</span>) .<span class="fu">run</span></code></pre></div>
+<p><a href="/assets/visuals/effect-extensions/file-failure.png"><img src="/assets/visuals/effect-extensions/file-failure.png" width="100%" target="_blank"/></a></p>
+<h1 id="previous-work">Previous Work</h1>
+<p>In my previous projects, I used the pattern without rich wrappers as follows:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">for</span> {
+  bodyJson &lt;- etr { <span class="fu">parse</span>(requestBody)                   }
+  _        &lt;- sus { <span class="fu">println</span>(s<span class="st">&quot;Parsed body: $bodyJson&quot;</span>)   }
+  fileName &lt;- etr { bodyJson.<span class="fu">hcursor</span>.<span class="fu">get</span>[String](<span class="st">&quot;file&quot;</span>) }
+  fileBody &lt;- exn { File(fileName).<span class="fu">contentAsString</span>       }
+  _        &lt;- sus { <span class="fu">println</span>(s<span class="st">&quot;Parsed file: $fileBody&quot;</span>)   }
+} <span class="kw">yield</span> ()</code></pre></div>
+<p>I defined the effect extension methods as ordinary methods in the package object. However, the approach as in the code sample above forced me to use curly braces. Usage of braces decreases readability of code.</p>
+<p>The advantage of the effect extension pattern with rich wrappers is that the formalism required to specify the side effect types is localised at the end of the expressions and does not wrap them, which increases readability.</p>
+<h1 id="directions-for-improvement">Directions for Improvement</h1>
+<p>The big brother of the rich wrapper pattern is the type class pattern. If rich wrappers are not enough for your project, consider specifying effect extensions as type classes.</p>
+<p>The motivation for placing the entire pattern into the package object is for it to be accessible from the entire application. The Cats library solves the accessibility problem by stuffing all the functionality into a single object. You can access all it implicits via a single import as follows:</p>
+<div class="sourceCode"><pre class="sourceCode scala"><code class="sourceCode scala"><span class="kw">import</span> cats.<span class="fu">implicits</span>.<span class="fu">_</span></code></pre></div>
+<p>If the package object approach does not work for you, consider following in footsteps of Cats. In the file extension world, we have extensions that are widely recognised – <code>.scala</code>, <code>.png</code>, <code>.txt</code>. In the type class world, we have libraries of type classes like Cats or ScalaZ. Can we have a library of widely recognised effect type extensions? What problem might rise a need for such a library? Can you think of possible applications? Share your thoughts in the comments!</p>
+</div>
+</div>
+
+
+      <div class="footer">
+        <div class="disclaimer">
+  <p>
+    © John Doe, 2016 - 2020 &mdash; built using <a href="https://github.com/swanson/lagom">Lagom theme</a>. Powered by <a href="https://github.com/anatoliykmetyuk/thera">Thera</a>. The sources of this site are availabel on <a href="https://github.com/anatoliykmetyuk/anatoliykmetyuk.github.io">GitHub</a>.
+  </p>
+</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
