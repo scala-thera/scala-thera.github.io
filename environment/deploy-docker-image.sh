@@ -5,5 +5,5 @@ docker build --no-cache -t \
   --file "$SCRIPT_DIR/Dockerfile" \
   gondolav/thera-blog:$(date +%F) .
 docker login
-docker tag 440f15e3e6a3 gondolav/thera-blog:$(date +%F)
+#docker tag 440f15e3e6a3 gondolav/thera-blog:$(date +%F)
 docker push gondolav/thera-blog:$(date +%F)
