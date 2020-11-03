@@ -9,7 +9,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: thera/thera-blog:2020-05-14
+    container: gondolav/thera-blog:2020-11-03
 
     steps:
       - name: Git Checkout
@@ -34,7 +34,7 @@ jobs:
 
   publish_website:
     runs-on: ubuntu-latest
-    container: thera/thera-blog.com:2020-05-14
+    container: gondolav/thera-blog.com:2020-11-03
     needs: [test]
     if: github.event_name == 'push'
 
