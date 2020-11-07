@@ -17,7 +17,7 @@ To follow this tutorial, you need to:
 
 We will use [Ammonite](https://ammonite.io) and [os-lib](https://github.com/lihaoyi/os-lib) in conjunction with [Pandoc](https://pandoc.org) to setup the build procedure, with Thera streamlining the process. The procedure, driven by various Thera templates, will process assets, CSS files and posts (in Markdown) and generate the blog's HTML.
 
-Here's the basic structure:
+Here's the basic project structure:
 
 ```
 ├── .github/workflows - GitHub Actions configuration
