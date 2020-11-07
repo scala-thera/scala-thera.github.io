@@ -19,7 +19,6 @@ def htmlFragmentCtx(implicit ctx: => ValueHierarchy): ValueHierarchy =
   names("htmlFragment" ->
     Function.function[Str] { name =>
       val containsJs = Set(
-        "analytics",
         "google-tag-manager-head",
       )
 
