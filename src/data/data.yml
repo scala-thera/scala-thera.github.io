@@ -4,7 +4,7 @@ description: A Thera-powered blog
 locale: en-GB
 keywords: [scala,programming,functional programming,thera,template-engine]
 url: /
-siteUrl: http://thera-example.github.io
+siteUrl: https://scala-thera.github.io/
 
 # Social
 github: Gondolav

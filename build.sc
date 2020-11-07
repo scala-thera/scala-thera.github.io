@@ -45,7 +45,7 @@ def build(): Unit = {
 
 def genStaticAssets(): Unit = {
   println("Copying static assets")
-  for (f <- List("assets", "CNAME", "favicon.png"))
+  for (f <- List("assets","favicon.png"))
     copy(src/f, compiled/f,
       replaceExisting = true, createFolders = true)
 }
