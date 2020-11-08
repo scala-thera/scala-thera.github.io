@@ -4,7 +4,7 @@ In this tutorial, you will build a blog powered by [Thera](https://github.com/sc
 
 By using Thera, you will be able to reduce code duplication, increase your productivity and better organize your project.
 
-You can already have a look at the final result [here](https://scala-thera.github.io). The source code of the tutorial is hosted on [GitHub](https://github.com/scala-thera/scala-thera.github.io).
+You can already have a look at the final result [here](https://scala-thera.github.io). The source code of the tutorial is hosted on [GitHub](https://github.com/scala-thera/scala-thera.github.io). You can use it to jump start your development.
 
 ## Prerequisites
 
@@ -12,12 +12,13 @@ To follow this tutorial, you need to:
 
 1. Create a public GitHub repository; it will host the blog source code.
 2. Create a [Docker](https://www.docker.com) repository; it will host the image used by [GitHub Actions](https://github.com/features/actions) to publish the website.
+3. Install Docker on your machine; you will use it to develop locally and to deploy the blog's Docker image on Docker Hub.
 
 ## Structure
 
 We will use [Ammonite](https://ammonite.io) and [os-lib](https://github.com/lihaoyi/os-lib) in conjunction with [Pandoc](https://pandoc.org) to setup the build procedure, with Thera streamlining the process. The procedure, driven by various Thera templates, will process assets, CSS files and posts (in Markdown) and generate the blog's HTML.
 
-Here's the basic project structure:
+Here's the final project structure:
 
 ```
 ├── .github/workflows - GitHub Actions configuration
