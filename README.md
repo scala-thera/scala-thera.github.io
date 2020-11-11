@@ -237,7 +237,7 @@ Then, enable GitHub Pages for your repository in the repository settings, choosi
 
 The blog's source code resides mainly in the `src/` folder, except some (optional) Pandoc filters used to generate images and include code in HTML stored in `pandoc-filters/`.
 
-The blog's main data is stored in `data/data.yml`, you can update it as you wish.
+The blog's main data is stored in `data/data.yml`, you can update it as you wish:
 
 ```yaml
 title: <title>
@@ -359,7 +359,7 @@ website: false
 <div id="post">${body}</div>
 ```
 
-Instead, `default.html` represents the default template, combining sidebar, footer and metadata information. It uses `htmlFragment`, a Thera Function defined in `build.sc`, to process a given HTML fragment. It also takes the body of the page as parameter and uses some arguments defined in `data/data.yml`, such as "${siteUrl}" or "${name}".
+Instead, `default.html` represents the default template, combining sidebar, footer and metadata information. It uses `htmlFragment`, a Thera Function defined in `build.sc`, to process a given HTML fragment. It also takes the body of the page as parameter and uses some arguments defined in `data/data.yml`, such as "${siteUrl}" or "${name}":
 
 ```html
 ---
