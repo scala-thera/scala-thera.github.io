@@ -266,9 +266,9 @@ email: <email>
 google_analytics_key:
 ```
 
-Static assets reside in `assets/`. Images, such as the ones used for the avatar and the thumbnail, are stored in `assets/imgs`.
+Static assets reside in `assets/`. Images, such as the ones used for the avatar and the thumbnail, are stored in `assets/imgs/`.
 
-In `fragments/`, we define HTML fragments to reuse across all blog's pages. When building the website, these fragments receive arguments, identified by "\${<argument_name>}", directly from Thera; an example is `sidebar.html`:
+In `fragments/`, we define HTML fragments to reuse across all blog's pages. When building the website, these fragments receive arguments, identified by `${<argument_name>}`, directly from Thera; an example is `sidebar.html`:
 
 ```html
 <nav>
@@ -302,7 +302,7 @@ In `fragments/`, we define HTML fragments to reuse across all blog's pages. When
 </nav>
 ```
 
-As you can see, we use different arguments: "${avatar}", "${name}", "${github}", "${twitter}" and "\${linkedin}". Upon building, Thera will replace each one of them with the corresponding data specified in `data.yml`.
+As you can see, we use different arguments: `${avatar}`, `${name}`, `${github}`, `${twitter}` and `${linkedin}`. Upon building, Thera will replace each one of them with the corresponding data specified in `data.yml`.
 
 In `posts/`, we store the posts' Markdown files. For the building process to work, each filename has to start with the date of the post, as it will be parsed to inject the date in the final HTML file. Each Markdown file has to contain a YAML header storing the title and the description of the post. An example is `2020-03-13-example3.md`:
 
@@ -320,27 +320,15 @@ A blog post example with a link to [Wikipedia](https://en.wikipedia.org/wiki/Mai
 CSS styling files reside in `private-assets/css`. All files are combined into a single `all.css` file used in the main Thera template, `templates/default.html`. This CSS file uses `cssAsset`, a Thera Function defined in `build.sc`, to read the other files and populate itself at build time:
 
 ```css
-$ {
-  cssasset: base;
-}
-$ {
-  cssasset: skeleton;
-}
-$ {
-  cssasset: screen;
-}
-$ {
-  cssasset: layout;
-}
-$ {
-  cssasset: syntax;
-}
-$ {
-  cssasset: pygments;
-}
+${cssAsset: base}
+${cssAsset: skeleton}
+${cssAsset: screen}
+${cssAsset: layout}
+${cssAsset: syntax}
+${cssAsset: pygments}
 ```
 
-The main Thera templates are in `templates`. The template `post.html`, for example, takes the post's body as parameter and outputs it wrapped in HTML, with date and title:
+The main Thera templates are in `templates/`. The template `post.html` takes the post's body as parameter and outputs it wrapped in HTML, with date and title:
 
 ```html
 ---
@@ -359,7 +347,7 @@ website: false
 <div id="post">${body}</div>
 ```
 
-Instead, `default.html` represents the default template, combining sidebar, footer and metadata information. It uses `htmlFragment`, a Thera Function defined in `build.sc`, to process a given HTML fragment. It also takes the body of the page as parameter and uses some arguments defined in `data/data.yml`, such as "${siteUrl}" or "${name}":
+Instead, `default.html` represents the default template, combining sidebar, footer and metadata information. It uses `htmlFragment`, a Thera Function defined in `build.sc`, to process a given HTML fragment. It also takes the body of the page as parameter and uses some arguments defined in `data/data.yml`, such as `${siteUrl}` or `${name}`:
 
 ```html
 ---
