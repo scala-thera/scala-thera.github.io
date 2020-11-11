@@ -235,6 +235,206 @@ Then, enable GitHub Pages for your repository in the repository settings, choosi
 
 ### Part 3: Blog's source code
 
+The blog's source code resides mainly in the `src/` folder, except some (optional) Pandoc filters used to generate images and include code in HTML stored in `pandoc-filters/`.
+
+The blog's main data is stored in `data/data.yml`, you can update it as you wish.
+
+```yaml
+title: <title>
+siteTitle: <site_title>
+description: <description>
+locale: en-GB
+keywords: [<keyword1>, <keyword2>, <keyword3>]
+url: /
+siteUrl: <github_pages_url>
+
+# Social
+github: <github_username>
+twitter: <twitter_username>
+linkedin: <linkedin_username>
+show_atom_feed: 'true'
+
+# Theme
+avatar: avatar_200.png # filename to use
+thumbnail: avatar_100.png # filename to use
+
+# "Hi, I'm _______"
+name: <name>
+email: <email>
+
+# Google Analytics key, leave blank to ignore
+google_analytics_key:
+```
+
+Static assets reside in `assets/`. Images, such as the ones used for the avatar and the thumbnail, are stored in `assets/imgs`.
+
+In `fragments/`, we define HTML fragments to reuse across all blog's pages. When building the website, these fragments receive arguments, identified by "\${<argument_name>}", directly from Thera; an example is `sidebar.html`:
+
+```html
+<nav>
+  <h1>Hi.</h1>
+  <a href="/">
+    <img src="/assets/imgs/${avatar}" id="logo" alt="Blog logo" />
+  </a>
+  <h2>I'm <a href="/">${name}</a>.</h2>
+  <div id="bio">
+    <p>💻 This is an example bio.</p>
+  </div>
+  <div id="social">
+    Where to find me:
+    <div id="stalker">
+      <a title="${github} on Github" href="https://github.com/${github}">
+        <i class="fa fa-github-square"></i>
+      </a>
+
+      <a title="${twitter} on Twitter" href="https://twitter.com/${twitter}">
+        <i class="fa fa-twitter-square"></i>
+      </a>
+
+      <a
+        title="${name} on LinkedIn"
+        href="https://www.linkedin.com/in/${linkedin}"
+      >
+        <i class="fa fa-linkedin-square"></i>
+      </a>
+    </div>
+  </div>
+</nav>
+```
+
+As you can see, we use different arguments: "${avatar}", "${name}", "${github}", "${twitter}" and "\${linkedin}". Upon building, Thera will replace each one of them with the corresponding data specified in `data.yml`.
+
+In `posts/`, we store the posts' Markdown files. For the building process to work, each filename has to start with the date of the post, as it will be parsed to inject the date in the final HTML file. Each Markdown file has to contain a YAML header storing the title and the description of the post. An example is `2020-03-13-example3.md`:
+
+```markdown
+---
+title: Example blog post 3
+description: An example
+---
+
+# Example
+
+A blog post example with a link to [Wikipedia](https://en.wikipedia.org/wiki/Main_Page).
+```
+
+CSS styling files reside in `private-assets/css`. All files are combined into a single `all.css` file used in the main Thera template, `templates/default.html`. This CSS file uses `cssAsset`, a Thera Function defined in `build.sc`, to read the other files and populate itself at build time:
+
+```css
+$ {
+  cssasset: base;
+}
+$ {
+  cssasset: skeleton;
+}
+$ {
+  cssasset: screen;
+}
+$ {
+  cssasset: layout;
+}
+$ {
+  cssasset: syntax;
+}
+$ {
+  cssasset: pygments;
+}
+```
+
+The main Thera templates are in `templates`. The template `post.html`, for example, takes the post's body as parameter and outputs it wrapped in HTML, with date and title:
+
+```html
+---
+[body]
+website: false
+---
+
+<p class="meta">
+  ${date}
+  <a href="/">
+    <i class="home fa fa-home"></i>
+  </a>
+</p>
+
+<h1 class="title">${title}</h1>
+<div id="post">${body}</div>
+```
+
+Instead, `default.html` represents the default template, combining sidebar, footer and metadata information. It uses `htmlFragment`, a Thera Function defined in `build.sc`, to process a given HTML fragment. It also takes the body of the page as parameter and uses some arguments defined in `data/data.yml`, such as "${siteUrl}" or "${name}".
+
+```html
+---
+[body]
+website: true
+---
+
+<!DOCTYPE html>
+<!--[if lt IE 7]><html class="ie ie6" lang="en"> <![endif]-->
+<!--[if IE 7]><html class="ie ie7" lang="en"> <![endif]-->
+<!--[if IE 8]><html class="ie ie8" lang="en"> <![endif]-->
+<!--[if (gte IE 9)|!(IE)]><!-->
+<html lang="en">
+  <!--<![endif]-->
+  <head>
+    ${htmlFragment: google-tag-manager-head} ${htmlFragment: meta}
+
+    <link rel="canonical" href="${siteUrl}${url}" />
+
+    <link
+      href="//fonts.googleapis.com/css?family=Open+Sans:600,800"
+      rel="stylesheet"
+      type="text/css"
+    />
+    <link rel="shortcut icon" href="/favicon.png" />
+    <link
+      rel="alternate"
+      type="application/atom+xml"
+      title="${name}"
+      href="${siteUrl}/atom.xml"
+    />
+
+    <link rel="stylesheet" href="/assets/all.css" />
+    <link
+      href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css"
+      rel="stylesheet"
+      integrity="sha256-k2/8zcNbxVIh5mnQ52A0r3a6jAgMGxFJFE2707UxGCk= sha512-ZV9KawG2Legkwp3nAlxLIVFudTauWuBpC10uEafMHYL0Sarrz5A7G79kXh5+5+woxQ5HM559XX2UZjMJ36Wplg=="
+      crossorigin="anonymous"
+    />
+  </head>
+  <body>
+    ${htmlFragment: google-tag-manager-body}
+
+    <div class="container">
+      <div class="four columns sidebar">${htmlFragment: sidebar}</div>
+
+      <div class="eleven columns content">
+        ${body}
+
+        <div class="footer">${htmlFragment: footer}</div>
+      </div>
+    </div>
+  </body>
+</html>
+```
+
+Finally, `index.html` is the entry-point of the blog. It uses `foreach`, a predefined Thera Function, to display the list of posts:
+
+```html
+---
+title: Blog Posts
+---
+
+<div id="home">
+  <h2><i class="fa fa-bookmark"></i> Blog Posts</h2>
+  <ul id="blog-posts" class="posts">
+    ${foreach: $allPosts, ${post =>
+    <li>
+      <span>${post.date} &raquo;</span><a href="${post.url}">${post.title}</a>
+    </li>
+    }}
+  </ul>
+</div>
+```
+
 ### Part 4: Building with Thera
 
 ## Final remarks
