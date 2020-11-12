@@ -1,5 +1,15 @@
 # Creating a blog with Thera
 
+- [Creating a blog with Thera](#creating-a-blog-with-thera)
+  - [Prerequisites](#prerequisites)
+  - [Structure](#structure)
+  - [Tutorial](#tutorial)
+    - [Part 1: Docker environment](#part-1-docker-environment)
+    - [Part 2: GitHub Actions](#part-2-github-actions)
+    - [Part 3: Blog's source code](#part-3-blogs-source-code)
+    - [Part 4: Building with Thera](#part-4-building-with-thera)
+  - [Final remarks](#final-remarks)
+
 In this tutorial, you will build a blog powered by [Thera](https://github.com/scala-thera/thera) and published on [GitHub Pages](https://pages.github.com).
 
 By using Thera, you will be able to reduce code duplication, increase your productivity and better organize your project.
