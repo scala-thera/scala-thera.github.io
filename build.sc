@@ -6,15 +6,17 @@ import $file.util, util._
 import os._
 import thera._, ValueHierarchy.names
 
-
+// 1.
 val allPosts: List[Post] = walk(
     path = src/"posts",
     skip = p => p.ext !="md"
   ).map(Post.fromPath).toList
+
+// 2.
 val defaultCtx: ValueHierarchy =
   ValueHierarchy.yaml(read(src/"data"/"data.yml"))
 
-
+// 3.
 def htmlFragmentCtx(implicit ctx: => ValueHierarchy): ValueHierarchy =
   names("htmlFragment" ->
     Function.function[Str] { name =>
@@ -28,6 +30,7 @@ def htmlFragmentCtx(implicit ctx: => ValueHierarchy): ValueHierarchy =
     }
   )
 
+// 4.
 val postTemplate = Thera(read(src/"templates"/"post.html"))
 val defaultTemplate = Thera(read(src/"templates"/"default.html"))
 
@@ -43,6 +46,7 @@ def build(): Unit = {
   cleanup()
 }
 
+// 5.
 def genStaticAssets(): Unit = {
   println("Copying static assets")
   for (f <- List("assets","favicon.png"))
@@ -50,6 +54,7 @@ def genStaticAssets(): Unit = {
       replaceExisting = true, createFolders = true)
 }
 
+// 6.
 def genCss(): Unit = {
   println("Processing CSS assets")
   implicit val ctx = defaultCtx + names(
@@ -61,13 +66,14 @@ def genCss(): Unit = {
   writeFile(compiled/"assets"/"all.css", css)
 }
 
+// 7.
 def genPosts(): Unit = {
   println(s"Processing ${allPosts.length} posts...")
 
   for ( (post, idx) <- allPosts.zipWithIndex ) {
     println(s"[$idx/${allPosts.length}] Processing ${post.file}")
     val (header, body) = Thera.split(post.src)
-    val postHtml = Thera.quote(postMarkdownToHtml(body))
+    val postHtml = Thera.quote(postMarkdownToHtml(body)) // the post's HTML body as to interpreted as HTML, not a template
     val postThera = Thera(Thera.join(header, postHtml))
 
     implicit lazy val ctx: ValueHierarchy =
@@ -79,18 +85,19 @@ def genPosts(): Unit = {
         "url" -> Str(post.url),
       ) + htmlFragmentCtx
 
-    val result = pipeThera(postThera, postTemplate, defaultTemplate)
+    val result = pipeThera(postThera, postTemplate, defaultTemplate) // pipe the different Thera templates to pass the parameters up the hierarchy
     writeFile(compiled/"posts"/post.htmlName, result)
   }
 }
 
+// 8.
 def genIndex(): Unit = {
   println("Generating index.html")
   val index = Thera(read(src/"index.html"))
   implicit lazy val ctx: ValueHierarchy =
     defaultCtx + defaultTemplate.context +
     index.context + htmlFragmentCtx + names(
-      "allPosts" -> Arr(allPosts.sortBy(_.date)
+      "allPosts" -> Arr(allPosts.sortBy(_.date) // show the most recent posts first
         .reverse.map(_.asValue))
     )
 
@@ -98,7 +105,8 @@ def genIndex(): Unit = {
   writeFile(compiled/"index.html", res)
 }
 
+// 9.
 def cleanup(): Unit =
   remove.all(compiled/"code")
 
-build()
+build() // actually run the build procedure

@@ -425,4 +425,232 @@ title: Blog Posts
 
 ### Part 4: Building with Thera
 
+We will now see how to build our blog with Thera. Three Ammonite scripts are used for the task: `build.sc`, `post.sc` and `util.sc`.
+
+`post.sc` stores the case class representing a post, and the factory function to create it from a file path:
+
+```scala
+import $ivy.`com.akmetiuk::thera:0.2.0-M1` // download Thera from Ivy
+
+import java.util.Date
+import java.text.SimpleDateFormat
+
+import os._
+import thera._
+
+case class Post(file: Path, date: Date) {
+  lazy val htmlName: String = s"${file.baseName}.html"
+  lazy val url: String = s"/posts/$htmlName"
+  lazy val dateStr: String = Post.dateFormatter.format(date)
+  lazy val src: String = read(file)
+  lazy val title: String = Thera.split(src) match {
+    case (header, _) =>
+      ValueHierarchy.yaml(header)("title").asStr.value // build a ValueHierarchy from the post's header
+  }
+  lazy val asValue: Value = ValueHierarchy.names(
+    "date"  -> Str(dateStr),
+    "url"   -> Str(url),
+    "title" -> Str(title),
+  )
+}
+
+object Post {
+  val dateParser    = new SimpleDateFormat("yyyy-MM-dd"    )
+  val dateFormatter = new SimpleDateFormat("MMM dd, yyyy")
+
+  def fromPath(f: Path): Post = {
+    val postName = """(\d{4}-\d{2}-\d{2})-.*\.md""".r
+    f.toIO.getName match { case postName(dateStr) => Post(
+      file = f
+    , date = dateParser.parse(dateStr)) }
+  }
+}
+```
+
+`util.sc`, instead, provides useful functions to process multiple Thera templates, run commands and write files:
+
+```scala
+import $ivy.`com.akmetiuk::thera:0.2.0-M1`
+
+import thera._
+import os._
+
+
+val src      = pwd/"src"
+val compiled = pwd/"_site"
+
+/**
+ * Command line pipe. Invokes an external application, obtains its
+ * input and output streams and feeds
+ * the `input` to the output stream. Returns the contents of the
+ * input stream of the command.
+ */
+def pipeIntoCommand(cmd: List[String], input: String, workdir: Path,
+  encoding: String = "utf8"): String = {
+  val p = proc(cmd).call(
+    cwd = workdir,
+    stdin = input
+  )
+  println(p.err.text)
+  p.out.text
+}
+
+def postMarkdownToHtml(str: String): String =
+  pipeIntoCommand(
+    "pandoc" ::
+    "--toc" ::
+    "--webtex" ::
+    "--template=../src/templates/pandoc-post.html" ::
+    "--filter=../pandoc-filters/graphviz.py" ::
+    "--filter=../pandoc-filters/plantuml.py" ::
+    "--filter=../pandoc-filters/include-code.py" :: Nil,
+    str, compiled)
+
+def pandocRaw(str: String): String =
+  pipeIntoCommand("pandoc" :: Nil, str, compiled)
+
+def writeFile(f: Path, str: String): Unit =
+  write.over(f, str, createFolders = true, truncate = false)
+
+def pipeThera(tmls: Template*)(implicit ctx: ValueHierarchy): String =
+  tmls.tail.foldLeft(tmls.head.mkValue) { (v, tml) =>
+    tml.mkValue.asFunction(v :: Nil)
+  }.asStr.value
+```
+
+Finally, `build.sc`, shown below, builds the blog in the following way:
+
+1. It reads all posts stored in `src/posts`
+2. It builds the default ValueHierarchy `defaultCtx` by reading `src/data/data.yml`
+3. It builds an additional ValueHierarchy `htmlFragmentCtx` storing the `htmlFragment` function
+4. It processes the post and default Thera templates
+5. It starts the actual build procedure by copying static assets to `_site/`, the compiled website directory
+6. It processes CSS assets from `src/private-assets/css/`, reading them with the `cssAsset` function and combining them in `_site/assets/all.css` through a Thera template
+7. It processes the posts, and stores the corresponding HTML in `_site/posts/`: it does so by generating the posts' HTML body, which is then passed as argument to the post template, which is in turn passed as argument to the default template
+8. It generates `index.html` by reading the corresponding file, piping it into the default template and copying the result to `_site/index.html`
+9. It removes from `_site/` any remaining code
+
+```scala
+import $ivy.`com.akmetiuk::thera:0.2.0-M1`
+
+import $file.post, post._
+import $file.util, util._
+
+import os._
+import thera._, ValueHierarchy.names
+
+// 1.
+val allPosts: List[Post] = walk(
+    path = src/"posts",
+    skip = p => p.ext !="md"
+  ).map(Post.fromPath).toList
+
+// 2.
+val defaultCtx: ValueHierarchy =
+  ValueHierarchy.yaml(read(src/"data"/"data.yml"))
+
+// 3.
+def htmlFragmentCtx(implicit ctx: => ValueHierarchy): ValueHierarchy =
+  names("htmlFragment" ->
+    Function.function[Str] { name =>
+      val containsJs = Set(
+        "google-tag-manager-head",
+      )
+
+      var source = read(src/s"fragments"/s"${name.value}.html")
+      if (containsJs(name.value)) source = Thera.quote(source)
+      Thera(source).mkValue(ctx).asStr
+    }
+  )
+
+// 4.
+val postTemplate = Thera(read(src/"templates"/"post.html"))
+val defaultTemplate = Thera(read(src/"templates"/"default.html"))
+
+
+// === Build procedure ===
+def build(): Unit = {
+  if (exists(compiled))
+    list(compiled).foreach(remove.all)
+  genStaticAssets()
+  genCss()
+  genPosts()
+  genIndex()
+  cleanup()
+}
+
+// 5.
+def genStaticAssets(): Unit = {
+  println("Copying static assets")
+  for (f <- List("assets","favicon.png"))
+    copy(src/f, compiled/f,
+      replaceExisting = true, createFolders = true)
+}
+
+// 6.
+def genCss(): Unit = {
+  println("Processing CSS assets")
+  implicit val ctx = defaultCtx + names(
+    "cssAsset" -> Function.function[Str] { name =>
+      Str(read(src/s"private-assets"/"css"/s"${name.value}.css")) }
+  )
+
+  val css = Thera(read(src/"private-assets"/"css"/"all.css")).mkString
+  writeFile(compiled/"assets"/"all.css", css)
+}
+
+// 7.
+def genPosts(): Unit = {
+  println(s"Processing ${allPosts.length} posts...")
+
+  for ( (post, idx) <- allPosts.zipWithIndex ) {
+    println(s"[$idx/${allPosts.length}] Processing ${post.file}")
+    val (header, body) = Thera.split(post.src)
+    val postHtml = Thera.quote(postMarkdownToHtml(body)) // the post's HTML body as to interpreted as HTML, not a template
+    val postThera = Thera(Thera.join(header, postHtml))
+
+    implicit lazy val ctx: ValueHierarchy =
+      defaultCtx + defaultTemplate.context +
+      postTemplate.context +
+      postThera.context +
+      names(
+        "date" -> Str(post.dateStr),
+        "url" -> Str(post.url),
+      ) + htmlFragmentCtx
+
+    val result = pipeThera(postThera, postTemplate, defaultTemplate) // pipe the different Thera templates to pass the parameters up the hierarchy
+    writeFile(compiled/"posts"/post.htmlName, result)
+  }
+}
+
+// 8.
+def genIndex(): Unit = {
+  println("Generating index.html")
+  val index = Thera(read(src/"index.html"))
+  implicit lazy val ctx: ValueHierarchy =
+    defaultCtx + defaultTemplate.context +
+    index.context + htmlFragmentCtx + names(
+      "allPosts" -> Arr(allPosts.sortBy(_.date) // show the most recent posts first
+        .reverse.map(_.asValue))
+    )
+
+  val res = pipeThera(index, defaultTemplate)
+  writeFile(compiled/"index.html", res)
+}
+
+// 9.
+def cleanup(): Unit =
+  remove.all(compiled/"code")
+
+build() // actually run the build procedure
+```
+
 ## Final remarks
+
+Everything is now ready to deploy your blog! All you have to do left is:
+
+1. Running `environment/deploy-docker-image.sh` to publish the Docker image
+2. Updating `.github/workflows/ci.yaml` with the most recent version of the Docker image
+3. Committing and pushing your code to GitHub
+
+Once done, GitHub Actions will build and publish the blog to GitHub Pages in minutes.

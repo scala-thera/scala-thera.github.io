@@ -5,7 +5,7 @@ import os._
 
 
 val src      = pwd/"src"
-val compiled = pwd/"_site"
+val compiled = pwd/"_site" // directory storing the built website
 
 /**
  * Command line pipe. Invokes an external application, obtains its
