@@ -20,9 +20,9 @@ You can already have a look at the final result [here](https://scala-thera.githu
 
 To follow this tutorial, you need to:
 
-1. Create a public GitHub repository; it will host the blog source code.
+1. Create a public [GitHub](https://github.com) repository; it will host the blog source code.
 2. Create a [Docker](https://www.docker.com) repository; it will host the image used by [GitHub Actions](https://github.com/features/actions) to publish the website.
-3. Install Docker on your machine; you will use it to develop locally and to deploy the blog's Docker image on Docker Hub.
+3. [Install Docker](https://docs.docker.com/get-docker/) on your machine; you will use it to develop locally and to deploy the blog's Docker image on Docker Hub.
 
 ## Structure
 
@@ -144,7 +144,7 @@ case $1 in
 esac
 ```
 
-Finally, we create a small shell script `deploy-docker-image.sh` to deploy our blog's image to Docker Hub. You should replace <your_Docker_username> and <your_project_Docker_repository> with the right information. The script will build the image, tag it with the current date and push it to Docker Hub:
+Finally, we create a small shell script `deploy-docker-image.sh` to deploy our blog's image to Docker Hub. You should replace `<your_Docker_username>` and `<your_project_Docker_repository>` with the right information. The script will build the image, tag it with the current date and push it to Docker Hub:
 
 ```shell
 #!/usr/bin/env bash
@@ -167,9 +167,9 @@ The code on GitHub should be organized as follows:
 Our CI consists of two steps executed on pushes and pull requests:
 
 1. A `test` step that verifies that the Docker image exists (and can be pulled), and that the website can be successfully built
-2. A `publish_website` step that runs if `test` succeeds and publishes the blog on GitHub Pages.
+2. A `publish_website` step that runs if `test` succeeds and publishes the blog on GitHub Pages
 
-To enable it, add the following `ci.yaml` file in a folder `.github/workflows` at the root of the project. You should replace <your_Docker_username>, <your_project_Docker_repository> and <tag_to_use> (a date, as we defined in `deploy-docker-image.sh`) with the right information:
+To enable it, add the following `ci.yaml` file in a folder `.github/workflows` at the root of the project. You should replace `<your_Docker_username>`, `<your_project_Docker_repository>` and `<tag_to_use>` (a date, as we defined in `deploy-docker-image.sh`) with the right information (the last published tag, for instance):
 
 ```yaml
 name: Website CI/CD
@@ -245,7 +245,7 @@ Then, enable GitHub Pages for your repository in the repository settings, choosi
 
 ### Part 3: Blog's source code
 
-The blog's source code resides mainly in the `src/` folder, except some (optional) Pandoc filters used to generate images and include code in HTML stored in `pandoc-filters/`.
+The blog's source code resides mainly in the `src/` folder, except some Pandoc filters used to generate images and include code in HTML stored in `pandoc-filters/`.
 
 The blog's main data is stored in `data/data.yml`, you can update it as you wish:
 
@@ -538,7 +538,7 @@ Finally, `build.sc`, shown below, builds the blog in the following way:
 6. It processes CSS assets from `src/private-assets/css/`, reading them with the `cssAsset` function and combining them in `_site/assets/all.css` through a Thera template
 7. It processes the posts, and stores the corresponding HTML in `_site/posts/`: it does so by generating the posts' HTML body, which is then passed as argument to the post template, which is in turn passed as argument to the default template
 8. It generates `index.html` by reading the corresponding file, piping it into the default template and copying the result to `_site/index.html`
-9. It removes from `_site/` any remaining code
+9. It performs some cleanup, removing from `_site/` any remaining code
 
 ```scala
 import $ivy.`com.akmetiuk::thera:0.2.0-M1`
