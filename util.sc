@@ -1,4 +1,4 @@
-import $ivy.`com.akmetiuk::thera:0.2.0-M1`
+import $ivy.`com.akmetiuk::thera:0.2.0-M3`
 
 import thera._
 import os._

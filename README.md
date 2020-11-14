@@ -440,7 +440,7 @@ We will now see how to build our blog with Thera. Three Ammonite scripts are use
 `post.sc` stores the case class representing a post, and the factory function to create it from a file path:
 
 ```scala
-import $ivy.`com.akmetiuk::thera:0.2.0-M1` // download Thera from Ivy
+import $ivy.`com.akmetiuk::thera:0.2.0-M3` // download Thera with Ivy
 
 import java.util.Date
 import java.text.SimpleDateFormat
@@ -480,7 +480,7 @@ object Post {
 `util.sc`, instead, provides useful functions to process multiple Thera templates, run commands and write files:
 
 ```scala
-import $ivy.`com.akmetiuk::thera:0.2.0-M1`
+import $ivy.`com.akmetiuk::thera:0.2.0-M3`
 
 import thera._
 import os._
@@ -541,7 +541,7 @@ Finally, `build.sc`, shown below, builds the blog in the following way:
 9. It performs some cleanup, removing from `_site/` any remaining code
 
 ```scala
-import $ivy.`com.akmetiuk::thera:0.2.0-M1`
+import $ivy.`com.akmetiuk::thera:0.2.0-M3`
 
 import $file.post, post._
 import $file.util, util._
