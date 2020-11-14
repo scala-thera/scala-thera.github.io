@@ -24,15 +24,15 @@ def htmlFragmentCtx(implicit ctx: => ValueHierarchy): ValueHierarchy =
         "google-tag-manager-head",
       )
 
-      var source = read(src/s"fragments"/s"${name.value}.html")
-      if (containsJs(name.value)) source = Thera.quote(source)
-      Thera(source).mkValue(ctx).asStr
+      val source = src/s"fragments"/s"${name.value}.html"
+      if (containsJs(name.value)) Thera(Thera.quote(read(source))).mkValue(ctx).asStr
+      else Thera(source.toIO).mkValue(ctx).asStr
     }
   )
 
 // 4.
-val postTemplate = Thera(read(src/"templates"/"post.html"))
-val defaultTemplate = Thera(read(src/"templates"/"default.html"))
+val postTemplate = Thera((src/"templates"/"post.html").toIO)
+val defaultTemplate = Thera((src/"templates"/"default.html").toIO)
 
 
 // === Build procedure ===
@@ -62,7 +62,7 @@ def genCss(): Unit = {
       Str(read(src/s"private-assets"/"css"/s"${name.value}.css")) }
   )
 
-  val css = Thera(read(src/"private-assets"/"css"/"all.css")).mkString
+  val css = Thera((src/"private-assets"/"css"/"all.css").toIO).mkString
   writeFile(compiled/"assets"/"all.css", css)
 }
 
@@ -93,7 +93,7 @@ def genPosts(): Unit = {
 // 8.
 def genIndex(): Unit = {
   println("Generating index.html")
-  val index = Thera(read(src/"index.html"))
+  val index = Thera((src/"index.html").toIO)
   implicit lazy val ctx: ValueHierarchy =
     defaultCtx + defaultTemplate.context +
     index.context + htmlFragmentCtx + names(

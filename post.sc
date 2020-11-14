@@ -23,13 +23,13 @@ case class Post(file: Path, date: Date) {
 }
 
 object Post {
-  val dateParser    = new SimpleDateFormat("yyyy-MM-dd"    )
+  val dateParser    = new SimpleDateFormat("yyyy-MM-dd")
   val dateFormatter = new SimpleDateFormat("MMM dd, yyyy")
 
   def fromPath(f: Path): Post = {
     val postName = """(\d{4}-\d{2}-\d{2})-.*\.md""".r
-    f.toIO.getName match { case postName(dateStr) => Post(
-      file = f
-    , date = dateParser.parse(dateStr)) }
+    f.toIO.getName match { 
+      case postName(dateStr) => Post(file = f, date = dateParser.parse(dateStr)) 
+    }
   }
 }
