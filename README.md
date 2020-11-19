@@ -1,6 +1,8 @@
 # Creating a blog with Thera
 
 - [Creating a blog with Thera](#creating-a-blog-with-thera)
+  - [Why Thera](#why-thera)
+  - [Quick start](#quick-start)
   - [Prerequisites](#prerequisites)
   - [Structure](#structure)
   - [Tutorial](#tutorial)
@@ -14,7 +16,22 @@ In this tutorial, you will build a blog powered by [Thera](https://github.com/sc
 
 By using Thera, you will be able to reduce code duplication, increase your productivity and better organize your project.
 
-You can already have a look at the final result [here](https://scala-thera.github.io). The source code of the tutorial is hosted on [GitHub](https://github.com/scala-thera/scala-thera.github.io). You can use it to jump start your development.
+This project also uses [Docker](https://www.docker.com) to:
+
+- Process Markdown as HTML (through [Pandoc](https://pandoc.org))
+- Setup a local development environment that builds the blog and starts a HTTP server serving it
+
+Docker is completely optional: everything can be installed and run on your machine natively.
+
+You can already have a look at the final result [here](https://scala-thera.github.io). The source code of the tutorial is hosted on [GitHub](https://github.com/scala-thera/scala-thera.github.io). You can use it to [jump start your development](#quick-start).
+
+## Why Thera
+
+Thera is a template engine intended to help people build static websites. However, Thera is not a static website generator: Scala has a powerful enough ecosystem on its own. Instead, Thera is designed to have very few dependencies and aims at simplicity and ease-of-use, offering a small but powerful set of tools meant to be used in conjunction with other libraries.
+
+## Quick start
+
+If all you need is a solid basis to build upon, you can simply fork this repository and everything should work out-of-the-box (assuming that GitHub Pages is enabled). As such, you can reuse the non-official Docker image we provide, but be aware that it only has Pandoc installed. For more details, you can take a look at the tutorial's [Docker section](#part-1-docker-environment).
 
 ## Prerequisites
 
@@ -78,6 +95,8 @@ RUN pip install pandocfilters pygraphviz
 # Start a server to browse the generated site
 CMD (mkdir _site; cd _site && python -m SimpleHTTPServer 8888)
 ```
+
+This Docker image is very simple: it is meant for local development and provides only Pandoc. You can improve it and add functionalities as you wish.
 
 Then, we create a shell script `thera.sh` to run locally the Docker image for development:
 
@@ -156,6 +175,8 @@ docker build --no-cache \
 docker login
 docker push <your_Docker_username>/<your_project_Docker_repository>:$(date +%F)
 ```
+
+You can run the script right away to publish the image on Docker Hub.
 
 ### Part 2: GitHub Actions
 
@@ -657,10 +678,4 @@ build() // actually run the build procedure
 
 ## Final remarks
 
-Everything is now ready to deploy your blog! All you have to do left is:
-
-1. Running `environment/deploy-docker-image.sh` to publish the Docker image
-2. Updating `.github/workflows/ci.yaml` with the most recent version of the Docker image
-3. Committing and pushing your code to GitHub
-
-Once done, GitHub Actions will build and publish the blog to GitHub Pages in minutes.
+Everything is now ready to deploy your blog! All you have to do left is committing and pushing your code to GitHub. Once done, GitHub Actions will build and publish the blog to GitHub Pages in minutes.
